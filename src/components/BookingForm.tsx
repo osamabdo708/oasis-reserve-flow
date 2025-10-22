@@ -21,6 +21,7 @@ import { ar } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const services = [
   { id: "massage", name: "مساج استرخائي", price: "200 ريال" },
@@ -42,6 +43,97 @@ export const BookingForm = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  
+  // Verification states
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleSendVerification = async () => {
+    if (!phone || phone.length < 10) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال رقم هاتف صحيح",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingCode(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-verification', {
+        body: { phoneNumber: phone },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الإرسال",
+        description: "تم إرسال رمز التحقق عبر WhatsApp",
+      });
+      
+      setCodeSent(true);
+    } catch (error: any) {
+      console.error('Error sending verification:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في إرسال رمز التحقق",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال رمز التحقق المكون من 6 أرقام",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-code', {
+        body: { 
+          phoneNumber: phone,
+          code: verificationCode,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "تم التحقق",
+          description: "تم التحقق من رقم الهاتف بنجاح",
+        });
+        setIsVerified(true);
+      } else {
+        toast({
+          title: "خطأ",
+          description: data?.message || "رمز التحقق غير صحيح",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error verifying code:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في التحقق من الرمز",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +142,15 @@ export const BookingForm = () => {
       toast({
         title: "معلومات ناقصة",
         description: "الرجاء ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isVerified) {
+      toast({
+        title: "خطأ",
+        description: "يرجى التحقق من رقم الهاتف أولاً",
         variant: "destructive",
       });
       return;
@@ -67,6 +168,9 @@ export const BookingForm = () => {
     setName("");
     setPhone("");
     setNotes("");
+    setVerificationCode("");
+    setCodeSent(false);
+    setIsVerified(false);
   };
 
   return (
@@ -144,16 +248,67 @@ export const BookingForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-base">رقم الهاتف *</Label>
-        <Input
-          id="phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="05xxxxxxxx"
-          className="h-12"
-          dir="ltr"
-        />
+        <div className="flex gap-2">
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              setCodeSent(false);
+              setIsVerified(false);
+              setVerificationCode("");
+            }}
+            placeholder="05xxxxxxxx"
+            className="h-12 flex-1"
+            dir="ltr"
+            disabled={isVerified}
+          />
+          {!isVerified && (
+            <Button
+              type="button"
+              onClick={handleSendVerification}
+              disabled={isSendingCode || !phone || phone.length < 10}
+              variant="outline"
+              className="h-12"
+            >
+              {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {codeSent && !isVerified && (
+        <div className="space-y-2">
+          <Label htmlFor="verification-code" className="text-base">رمز التحقق من WhatsApp *</Label>
+          <div className="flex gap-2">
+            <Input
+              id="verification-code"
+              type="text"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              placeholder="أدخل الرمز المكون من 6 أرقام"
+              maxLength={6}
+              className="h-12 flex-1"
+              dir="ltr"
+            />
+            <Button
+              type="button"
+              onClick={handleVerifyCode}
+              disabled={isVerifying || !verificationCode || verificationCode.length !== 6}
+              className="h-12"
+            >
+              {isVerifying ? "جاري التحقق..." : "تحقق"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isVerified && (
+        <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-green-700 dark:text-green-300 text-sm text-center font-medium">✓ تم التحقق من رقم الهاتف بنجاح</p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="notes" className="text-base">ملاحظات إضافية (اختياري)</Label>
