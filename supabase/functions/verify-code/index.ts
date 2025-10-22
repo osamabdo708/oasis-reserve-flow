@@ -13,13 +13,39 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneNumber, code } = await req.json();
+    const { phoneNumber: rawPhoneNumber, code } = await req.json();
     
-    console.log('Verifying code for phone:', phoneNumber);
-
-    if (!phoneNumber || !code) {
+    // Validate inputs
+    if (!rawPhoneNumber || !code) {
       throw new Error('رقم الهاتف أو رمز التحقق مفقود');
     }
+
+    // Validate code format (must be exactly 6 digits)
+    if (!/^[0-9]{6}$/.test(code)) {
+      throw new Error('رمز التحقق غير صحيح');
+    }
+
+    // Normalize phone number (same validation as send-verification)
+    const validateSaudiPhone = (phone: string): string => {
+      const digitsOnly = phone.replace(/\D/g, '');
+      const saudiMobileRegex = /^(966|0)?5[0-9]{8}$/;
+      
+      if (!saudiMobileRegex.test(digitsOnly)) {
+        throw new Error('رقم الهاتف غير صحيح');
+      }
+      
+      const normalized = digitsOnly.startsWith('0') 
+        ? '966' + digitsOnly.substring(1)
+        : digitsOnly.startsWith('966')
+        ? digitsOnly
+        : '966' + digitsOnly;
+      
+      return normalized;
+    };
+
+    const phoneNumber = validateSaudiPhone(rawPhoneNumber);
+    
+    console.log('Verifying code for phone:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -41,7 +67,43 @@ serve(async (req) => {
       throw new Error('خطأ في التحقق من الرمز');
     }
 
+    // Rate limiting: Check if too many failed attempts (5 max)
+    if (data && data.attempts >= 5) {
+      // Invalidate the code after too many attempts
+      await supabase
+        .from('verification_codes')
+        .delete()
+        .eq('id', data.id);
+
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'تم تجاوز عدد المحاولات المسموح بها. يرجى طلب رمز جديد' 
+        }), 
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     if (!data) {
+      // Increment attempt counter for all codes with this phone number
+      const { data: existingCodes } = await supabase
+        .from('verification_codes')
+        .select('id, attempts')
+        .eq('phone_number', phoneNumber)
+        .eq('verified', false);
+
+      if (existingCodes && existingCodes.length > 0) {
+        for (const record of existingCodes) {
+          await supabase
+            .from('verification_codes')
+            .update({ attempts: (record.attempts || 0) + 1 })
+            .eq('id', record.id);
+        }
+      }
+
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -65,7 +127,7 @@ serve(async (req) => {
       throw new Error('خطأ في تحديث حالة التحقق');
     }
 
-    console.log('Verification successful for:', phoneNumber);
+    console.log('Verification successful for:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
 
     return new Response(
       JSON.stringify({ success: true, message: 'تم التحقق بنجاح' }), 

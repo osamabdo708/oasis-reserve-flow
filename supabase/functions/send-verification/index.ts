@@ -13,29 +13,76 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneNumber } = await req.json();
+    const { phoneNumber: rawPhoneNumber } = await req.json();
     
-    console.log('Sending verification code to:', phoneNumber);
-
-    // Validate phone number
-    if (!phoneNumber || phoneNumber.length < 10) {
-      throw new Error('رقم الهاتف غير صحيح');
-    }
+    // Validate and normalize phone number
+    const validateSaudiPhone = (phone: string): string => {
+      if (!phone) {
+        throw new Error('رقم الهاتف مطلوب');
+      }
+      
+      // Remove all non-digit characters
+      const digitsOnly = phone.replace(/\D/g, '');
+      
+      // Saudi mobile numbers: +966 5XXXXXXXX or 05XXXXXXXX
+      const saudiMobileRegex = /^(966|0)?5[0-9]{8}$/;
+      
+      if (!saudiMobileRegex.test(digitsOnly)) {
+        throw new Error('رقم الهاتف غير صحيح. يجب أن يكون رقم سعودي يبدأ بـ 05');
+      }
+      
+      // Normalize to format: 9665XXXXXXXX
+      const normalized = digitsOnly.startsWith('0') 
+        ? '966' + digitsOnly.substring(1)
+        : digitsOnly.startsWith('966')
+        ? digitsOnly
+        : '966' + digitsOnly;
+      
+      return normalized;
+    };
+    
+    const phoneNumber = validateSaudiPhone(rawPhoneNumber);
+    
+    console.log('Sending verification code to:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
 
     // Generate 6-digit verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store verification code in database
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Delete any existing codes for this phone number
+    // Rate limiting: Check recent verification attempts (3 per hour)
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    const { data: recentCodes, error: rateLimitError } = await supabase
+      .from('verification_codes')
+      .select('created_at')
+      .eq('phone_number', phoneNumber)
+      .gte('created_at', oneHourAgo);
+
+    if (rateLimitError) {
+      console.error('Rate limit check error:', rateLimitError);
+    }
+
+    if (recentCodes && recentCodes.length >= 3) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'تم إرسال عدد كبير من الرموز. يرجى المحاولة بعد ساعة' 
+        }), 
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Delete any existing unverified codes for this phone number
     await supabase
       .from('verification_codes')
       .delete()
-      .eq('phone_number', phoneNumber);
+      .eq('phone_number', phoneNumber)
+      .eq('verified', false);
 
     // Insert new verification code
     const { error: insertError } = await supabase
@@ -56,9 +103,7 @@ serve(async (req) => {
       throw new Error('WHAPI_TOKEN not configured');
     }
 
-    // Format phone number for WhatsApp (remove any special characters and add country code if needed)
-    const formattedPhone = phoneNumber.replace(/\D/g, '');
-    
+    // Phone number is already normalized to 9665XXXXXXXX format
     const whatsappResponse = await fetch('https://gate.whapi.cloud/messages/text', {
       method: 'POST',
       headers: {
@@ -68,7 +113,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         typing_time: 0,
-        to: `${formattedPhone}@s.whatsapp.net`,
+        to: `${phoneNumber}@s.whatsapp.net`,
         body: `رمز التحقق الخاص بك هو: ${code}\n\nهذا الرمز صالح لمدة 10 دقائق.`,
       }),
     });

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       verification_codes: {
         Row: {
+          attempts: number | null
           code: string
           created_at: string
           expires_at: string
@@ -24,6 +25,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          attempts?: number | null
           code: string
           created_at?: string
           expires_at?: string
@@ -32,6 +34,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          attempts?: number | null
           code?: string
           created_at?: string
           expires_at?: string
