@@ -41,6 +41,7 @@ export const BookingForm = () => {
   const [selectedService, setSelectedService] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [name, setName] = useState("");
+  const [countryCode, setCountryCode] = useState("+966");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   
@@ -52,20 +53,23 @@ export const BookingForm = () => {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSendVerification = async () => {
-    if (!phone || phone.length < 10) {
+    if (!phone) {
       toast({
         title: "خطأ",
-        description: "يرجى إدخال رقم هاتف صحيح",
+        description: "يرجى إدخال رقم الهاتف",
         variant: "destructive",
       });
       return;
     }
 
+    // Combine country code and phone number, remove + and spaces
+    const fullPhoneNumber = `${countryCode}${phone}`.replace(/[\s+]/g, '');
+
     setIsSendingCode(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('send-verification', {
-        body: { phoneNumber: phone },
+        body: { phoneNumber: fullPhoneNumber },
       });
 
       if (error) throw error;
@@ -98,12 +102,15 @@ export const BookingForm = () => {
       return;
     }
 
+    // Combine country code and phone number, remove + and spaces
+    const fullPhoneNumber = `${countryCode}${phone}`.replace(/[\s+]/g, '');
+
     setIsVerifying(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('verify-code', {
         body: { 
-          phoneNumber: phone,
+          phoneNumber: fullPhoneNumber,
           code: verificationCode,
         },
       });
@@ -248,29 +255,46 @@ export const BookingForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-base">رقم الهاتف *</Label>
-        <div className="flex gap-2">
+        <div className="flex gap-2" dir="ltr">
+          <Select value={countryCode} onValueChange={setCountryCode} disabled={isVerified}>
+            <SelectTrigger className="w-[130px] h-12">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="+966">🇸🇦 +966</SelectItem>
+              <SelectItem value="+971">🇦🇪 +971</SelectItem>
+              <SelectItem value="+973">🇧🇭 +973</SelectItem>
+              <SelectItem value="+965">🇰🇼 +965</SelectItem>
+              <SelectItem value="+968">🇴🇲 +968</SelectItem>
+              <SelectItem value="+974">🇶🇦 +974</SelectItem>
+              <SelectItem value="+20">🇪🇬 +20</SelectItem>
+              <SelectItem value="+962">🇯🇴 +962</SelectItem>
+              <SelectItem value="+961">🇱🇧 +961</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             id="phone"
             type="tel"
             value={phone}
             onChange={(e) => {
-              setPhone(e.target.value);
+              // Only allow digits
+              const digits = e.target.value.replace(/\D/g, '');
+              setPhone(digits);
               setCodeSent(false);
               setIsVerified(false);
               setVerificationCode("");
             }}
-            placeholder="05xxxxxxxx"
+            placeholder="5xxxxxxxx"
             className="h-12 flex-1"
-            dir="ltr"
             disabled={isVerified}
           />
           {!isVerified && (
             <Button
               type="button"
               onClick={handleSendVerification}
-              disabled={isSendingCode || !phone || phone.length < 10}
+              disabled={isSendingCode || !phone}
               variant="outline"
-              className="h-12"
+              className="h-12 whitespace-nowrap"
             >
               {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
             </Button>

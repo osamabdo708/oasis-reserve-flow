@@ -25,25 +25,25 @@ serve(async (req) => {
       throw new Error('رمز التحقق غير صحيح');
     }
 
-    // Normalize phone number (same validation as send-verification)
-    const validateSaudiPhone = (phone: string): string => {
-      const digitsOnly = phone.replace(/\D/g, '');
-      const saudiMobileRegex = /^(966|0)?5[0-9]{8}$/;
+    // Validate and normalize phone number (same as send-verification)
+    const validatePhoneNumber = (phone: string): string => {
+      if (!phone) {
+        throw new Error('رقم الهاتف مطلوب');
+      }
       
-      if (!saudiMobileRegex.test(digitsOnly)) {
+      // Remove all non-digit characters including +
+      const digitsOnly = phone.replace(/\D/g, '');
+      
+      // Validate minimum length
+      if (digitsOnly.length < 10 || digitsOnly.length > 15) {
         throw new Error('رقم الهاتف غير صحيح');
       }
       
-      const normalized = digitsOnly.startsWith('0') 
-        ? '966' + digitsOnly.substring(1)
-        : digitsOnly.startsWith('966')
-        ? digitsOnly
-        : '966' + digitsOnly;
-      
-      return normalized;
+      // Return digits only (no + sign)
+      return digitsOnly;
     };
 
-    const phoneNumber = validateSaudiPhone(rawPhoneNumber);
+    const phoneNumber = validatePhoneNumber(rawPhoneNumber);
     
     console.log('Verifying code for phone:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
 

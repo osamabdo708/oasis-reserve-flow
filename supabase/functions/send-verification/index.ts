@@ -15,33 +15,25 @@ serve(async (req) => {
   try {
     const { phoneNumber: rawPhoneNumber } = await req.json();
     
-    // Validate and normalize phone number
-    const validateSaudiPhone = (phone: string): string => {
+    // Validate and normalize phone number (supports multiple countries)
+    const validatePhoneNumber = (phone: string): string => {
       if (!phone) {
         throw new Error('رقم الهاتف مطلوب');
       }
       
-      // Remove all non-digit characters
+      // Remove all non-digit characters including +
       const digitsOnly = phone.replace(/\D/g, '');
       
-      // Saudi mobile numbers: +966 5XXXXXXXX or 05XXXXXXXX
-      const saudiMobileRegex = /^(966|0)?5[0-9]{8}$/;
-      
-      if (!saudiMobileRegex.test(digitsOnly)) {
-        throw new Error('رقم الهاتف غير صحيح. يجب أن يكون رقم سعودي يبدأ بـ 05');
+      // Validate minimum length (country code + number should be at least 10 digits)
+      if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+        throw new Error('رقم الهاتف غير صحيح');
       }
       
-      // Normalize to format: 9665XXXXXXXX
-      const normalized = digitsOnly.startsWith('0') 
-        ? '966' + digitsOnly.substring(1)
-        : digitsOnly.startsWith('966')
-        ? digitsOnly
-        : '966' + digitsOnly;
-      
-      return normalized;
+      // Return digits only (no + sign)
+      return digitsOnly;
     };
     
-    const phoneNumber = validateSaudiPhone(rawPhoneNumber);
+    const phoneNumber = validatePhoneNumber(rawPhoneNumber);
     
     console.log('Sending verification code to:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
 
