@@ -142,7 +142,7 @@ export const BookingForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedService || !date || !selectedTime || !name || !phone) {
@@ -163,21 +163,46 @@ export const BookingForm = () => {
       return;
     }
 
-    toast({
-      title: "تم تأكيد الحجز بنجاح! ✅",
-      description: `سيتم التواصل معك قريباً على الرقم ${phone}`,
-    });
+    try {
+      // Save booking to database
+      const { error } = await supabase
+        .from('bookings')
+        .insert({
+          service: selectedService,
+          booking_date: date.toISOString().split('T')[0],
+          booking_time: selectedTime,
+          customer_name: name,
+          phone_number: `${countryCode}${phone}`,
+          notes: notes || null,
+          status: 'pending'
+        });
 
-    // Reset form
-    setSelectedService("");
-    setDate(undefined);
-    setSelectedTime("");
-    setName("");
-    setPhone("");
-    setNotes("");
-    setVerificationCode("");
-    setCodeSent(false);
-    setIsVerified(false);
+      if (error) throw error;
+
+      toast({
+        title: "تم تأكيد الحجز بنجاح! ✅",
+        description: `سيتم التواصل معك قريباً على الرقم ${countryCode}${phone}`,
+      });
+
+      // Reset form
+      setSelectedService("");
+      setDate(undefined);
+      setSelectedTime("");
+      setName("");
+      setPhone("");
+      setCountryCode("+966");
+      setNotes("");
+      setVerificationCode("");
+      setCodeSent(false);
+      setIsVerified(false);
+    } catch (error: any) {
+      console.error('Error saving booking:', error);
+      toast({
+        title: "خطأ",
+        description: "فشل في حفظ الحجز. يرجى المحاولة مرة أخرى",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

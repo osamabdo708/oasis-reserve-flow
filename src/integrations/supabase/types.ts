@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          created_at: string
+          customer_name: string
+          id: string
+          notes: string | null
+          phone_number: string
+          service: string
+          status: string
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          created_at?: string
+          customer_name: string
+          id?: string
+          notes?: string | null
+          phone_number: string
+          service: string
+          status?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          notes?: string | null
+          phone_number?: string
+          service?: string
+          status?: string
+        }
+        Relationships: []
+      }
       verification_codes: {
         Row: {
           attempts: number | null
