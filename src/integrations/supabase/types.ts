@@ -14,13 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      verification_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone_number: string
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone_number: string
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone_number?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_verification_codes: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
