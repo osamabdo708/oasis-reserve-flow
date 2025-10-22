@@ -270,6 +270,8 @@ export const BookingForm = () => {
               <SelectItem value="+20">🇪🇬 +20</SelectItem>
               <SelectItem value="+962">🇯🇴 +962</SelectItem>
               <SelectItem value="+961">🇱🇧 +961</SelectItem>
+              <SelectItem value="+970">🇵🇸 +970</SelectItem>
+              <SelectItem value="+972">🇮🇱 +972</SelectItem>
             </SelectContent>
           </Select>
           <Input
