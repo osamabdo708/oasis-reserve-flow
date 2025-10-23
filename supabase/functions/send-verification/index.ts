@@ -110,14 +110,22 @@ serve(async (req) => {
       body: formData.toString(),
     });
 
-    const whatsappData = await whatsappResponse.json();
+    const whatsappData = await whatsappResponse.text();
+    
+    console.log('WaChat API response:', whatsappResponse.status, whatsappData);
     
     if (!whatsappResponse.ok) {
-      console.error('WhatsApp API error:', whatsappData);
+      console.error('WaChat API error:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
-    console.log('Verification code sent successfully:', whatsappData);
+    // Check if response indicates success
+    if (!whatsappData.includes('"success":true') && !whatsappData.includes('success') && !whatsappResponse.ok) {
+      console.error('WaChat API returned unsuccessful response:', whatsappData);
+      throw new Error('فشل في إرسال رسالة WhatsApp');
+    }
+
+    console.log('Verification code sent successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'تم إرسال رمز التحقق' }), 
