@@ -89,25 +89,25 @@ serve(async (req) => {
       throw new Error('فشل في تخزين رمز التحقق');
     }
 
-    // Send WhatsApp message via whapi.cloud
-    const whapiToken = Deno.env.get('WHAPI_TOKEN');
-    if (!whapiToken) {
-      throw new Error('WHAPI_TOKEN not configured');
+    // Send WhatsApp message via wachat.net
+    const wachatToken = Deno.env.get('WACHAT_TOKEN');
+    if (!wachatToken) {
+      throw new Error('WACHAT_TOKEN not configured');
     }
 
-    // Phone number is already normalized to 9665XXXXXXXX format
-    const whatsappResponse = await fetch('https://gate.whapi.cloud/messages/text', {
+    const messageText = `رمز التحقق الخاص بك هو: ${code}\n\nهذا الرمز صالح لمدة 10 دقائق.`;
+    
+    const formData = new URLSearchParams();
+    formData.append('token', wachatToken);
+    formData.append('receiver', phoneNumber);
+    formData.append('msgtext', messageText);
+
+    const whatsappResponse = await fetch('https://apinode.web.id/send', {
       method: 'POST',
       headers: {
-        'accept': 'application/json',
-        'authorization': `Bearer ${whapiToken}`,
-        'content-type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
-        typing_time: 0,
-        to: `${phoneNumber}@s.whatsapp.net`,
-        body: `رمز التحقق الخاص بك هو: ${code}\n\nهذا الرمز صالح لمدة 10 دقائق.`,
-      }),
+      body: formData.toString(),
     });
 
     const whatsappData = await whatsappResponse.json();
