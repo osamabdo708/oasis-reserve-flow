@@ -21,16 +21,22 @@ serve(async (req) => {
         throw new Error('رقم الهاتف مطلوب');
       }
       
-      // Remove all non-digit characters including +
-      const digitsOnly = phone.replace(/\D/g, '');
+      // Remove all non-digit characters except +
+      let normalized = phone.replace(/[^\d+]/g, '');
+      
+      // Add + if not present
+      if (!normalized.startsWith('+')) {
+        normalized = '+' + normalized;
+      }
       
       // Validate minimum length (country code + number should be at least 10 digits)
+      const digitsOnly = normalized.replace(/\D/g, '');
       if (digitsOnly.length < 10 || digitsOnly.length > 15) {
         throw new Error('رقم الهاتف غير صحيح');
       }
       
-      // Return digits only (no + sign)
-      return digitsOnly;
+      // Return with + sign
+      return normalized;
     };
     
     const phoneNumber = validatePhoneNumber(rawPhoneNumber);
@@ -89,43 +95,42 @@ serve(async (req) => {
       throw new Error('فشل في تخزين رمز التحقق');
     }
 
-    // Send WhatsApp message via wachat.net
-    const wachatToken = Deno.env.get('WACHAT_TOKEN');
-    if (!wachatToken) {
+    // Send WhatsApp message via wasenderapi.com
+    const wasenderToken = Deno.env.get('WACHAT_TOKEN');
+    if (!wasenderToken) {
       throw new Error('WACHAT_TOKEN not configured');
     }
 
     const messageText = `رمز التحقق الخاص بك هو: ${code}\n\nهذا الرمز صالح لمدة 10 دقائق.`;
     
-    const formData = new URLSearchParams();
-    formData.append('token', wachatToken);
-    formData.append('receiver', phoneNumber);
-    formData.append('msgtext', messageText);
-
-    const whatsappResponse = await fetch('https://apinode.web.id/send', {
+    const whatsappResponse = await fetch('https://wasenderapi.com/api/send-message', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${wasenderToken}`,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        to: phoneNumber,
+        text: messageText,
+      }),
     });
 
-    const whatsappData = await whatsappResponse.text();
+    const whatsappData = await whatsappResponse.json();
     
-    console.log('WaChat API response:', whatsappResponse.status, whatsappData);
+    console.log('WaSender API response:', whatsappResponse.status, whatsappData);
     
     if (!whatsappResponse.ok) {
-      console.error('WaChat API error:', whatsappData);
+      console.error('WaSender API error:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
     // Check if response indicates success
-    if (!whatsappData.includes('"success":true') && !whatsappData.includes('success') && !whatsappResponse.ok) {
-      console.error('WaChat API returned unsuccessful response:', whatsappData);
+    if (!whatsappData.success) {
+      console.error('WaSender API returned unsuccessful response:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
-    console.log('Verification code sent successfully');
+    console.log('Verification code sent successfully, msgId:', whatsappData.data?.msgId);
 
     return new Response(
       JSON.stringify({ success: true, message: 'تم إرسال رمز التحقق' }), 
