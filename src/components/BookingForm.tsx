@@ -42,7 +42,7 @@ export const BookingForm = () => {
   const [selectedService, setSelectedService] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState("+966");
+  const [countryCode, setCountryCode] = useState("+970");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   
