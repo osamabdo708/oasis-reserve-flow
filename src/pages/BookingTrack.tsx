@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, Clock, Phone, User, FileText, X } from "lucide-react";
+import { ArrowRight, Calendar, Clock, Phone, User, FileText, X, MessageCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -176,8 +176,9 @@ const BookingTrack = () => {
                   type="submit" 
                   size="lg" 
                   disabled={isLoading}
-                  className="h-12"
+                  className="h-12 bg-[#25D366] hover:bg-[#20BA5A] text-white gap-2"
                 >
+                  <MessageCircle className="w-4 h-4" />
                   {isLoading ? "جاري البحث..." : "بحث"}
                 </Button>
               </div>

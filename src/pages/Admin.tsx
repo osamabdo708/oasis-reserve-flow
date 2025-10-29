@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -251,8 +251,18 @@ const Admin = () => {
                           {new Date(booking.booking_date).toLocaleDateString('ar-SA')}
                         </TableCell>
                         <TableCell className="text-right">{booking.booking_time}</TableCell>
-                        <TableCell className="text-right">{booking.customer_name}</TableCell>
-                        <TableCell className="text-right" dir="ltr">{booking.phone_number}</TableCell>
+                        <TableCell className="text-right">
+                          <a
+                            href={`https://wa.me/${booking.phone_number.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-[#25D366] hover:text-[#20BA5A] transition-colors"
+                            dir="ltr"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            {booking.phone_number}
+                          </a>
+                        </TableCell>
                         <TableCell className="text-right">{booking.notes || "-"}</TableCell>
                         <TableCell className="text-right">
                           {getStatusBadge(booking.status)}
