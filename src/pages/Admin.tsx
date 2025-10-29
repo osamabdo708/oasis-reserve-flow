@@ -8,7 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut } from "lucide-react";
+import { LogOut, CheckCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Booking {
   id: string;
@@ -100,23 +111,41 @@ const Admin = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      pending: "default",
-      confirmed: "secondary",
-      cancelled: "destructive",
-    };
-    
-    const labels: Record<string, string> = {
-      pending: "قيد الانتظار",
-      confirmed: "مؤكد",
-      cancelled: "ملغي",
-    };
-    
-    return (
-      <Badge variant={variants[status] || "default"}>
-        {labels[status] || status}
-      </Badge>
-    );
+    switch (status) {
+      case "pending":
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">قيد الانتظار</Badge>;
+      case "approved":
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">مؤكد</Badge>;
+      case "canceled":
+        return <Badge variant="destructive">ملغي</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleApproveBooking = async (bookingId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('approve-booking', {
+        body: { bookingId },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم التأكيد",
+        description: "تم تأكيد الحجز وإرسال رسالة WhatsApp للعميل",
+      });
+
+      // Refresh bookings
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error approving booking:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في تأكيد الحجز",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!isAuthenticated) {
@@ -206,6 +235,7 @@ const Admin = () => {
                       <TableHead className="text-right">رقم الهاتف</TableHead>
                       <TableHead className="text-right">ملاحظات</TableHead>
                       <TableHead className="text-right">الحالة</TableHead>
+                      <TableHead className="text-right">إجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -226,6 +256,32 @@ const Admin = () => {
                         <TableCell className="text-right">{booking.notes || "-"}</TableCell>
                         <TableCell className="text-right">
                           {getStatusBadge(booking.status)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {booking.status === 'pending' && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" className="gap-2">
+                                  <CheckCircle className="w-4 h-4" />
+                                  تأكيد
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>تأكيد الحجز</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    هل تريد تأكيد هذا الحجز؟ سيتم إرسال رسالة WhatsApp تلقائياً للعميل.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleApproveBooking(booking.id)}>
+                                    نعم، تأكيد الحجز
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
