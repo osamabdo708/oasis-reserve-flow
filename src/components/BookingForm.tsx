@@ -399,7 +399,7 @@ export const BookingForm = () => {
               disabled={isSendingCode || !phone}
               className="h-12 whitespace-nowrap bg-[#25D366] hover:bg-[#20BA5A] text-white gap-2"
             >
-              <MessageCircle className="w-4 h-4" />
+            
               {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
             </Button>
           )}
