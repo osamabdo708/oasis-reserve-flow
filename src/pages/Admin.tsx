@@ -204,7 +204,7 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="bookings" className="w-full">
+        <Tabs defaultValue="bookings" className="w-full" dir="rtl">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
