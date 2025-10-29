@@ -270,12 +270,12 @@ const Admin = () => {
                             </TableCell>
                             <TableCell className="text-right">{booking.booking_time}</TableCell>
                             <TableCell className="text-right">{booking.customer_name}</TableCell>
-                         <TableCell className="text-right">
+<TableCell className="text-right">
   <a
     href={`https://wa.me/${booking.phone_number.replace(/[^0-9]/g, '')}`}
     target="_blank"
     rel="noopener noreferrer"
-    className="flex items-center justify-end gap-2 text-[#25D366] hover:text-[#20BA5A] transition-colors"
+    className="flex flex-row-reverse justify-center items-center gap-2 bg-[#4dca5c5c] rounded-md p-1.5 border border-[#bbf7d0] text-[#25D366] hover:text-[#20BA5A] transition-colors"
     dir="ltr"
   >
     <img
@@ -286,6 +286,7 @@ const Admin = () => {
     {booking.phone_number}
   </a>
 </TableCell>
+
 
                             <TableCell className="text-right">{booking.notes || "-"}</TableCell>
                             <TableCell className="text-right">
