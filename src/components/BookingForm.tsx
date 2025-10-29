@@ -394,15 +394,20 @@ export const BookingForm = () => {
             disabled={isVerified}
           />
           {!isVerified && (
-            <Button
-              type="button"
-              onClick={handleSendVerification}
-              disabled={isSendingCode || !phone}
-              className="h-12 whitespace-nowrap bg-[#25D366] hover:bg-[#20BA5A] text-white gap-2"
-            >
-            
-              {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
-            </Button>
+        <Button
+  type="button"
+  onClick={handleSendVerification}
+  disabled={isSendingCode || !phone}
+  className="h-12 whitespace-nowrap bg-[#25D366] hover:bg-[#20BA5A] text-white gap-2 flex items-center justify-center"
+>
+  <img
+    src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png"
+    alt="icon"
+    className="w-5 h-5"
+  />
+  {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
+</Button>
+
           )}
         </div>
       </div>
