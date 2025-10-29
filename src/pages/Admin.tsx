@@ -251,6 +251,7 @@ const Admin = () => {
                           {new Date(booking.booking_date).toLocaleDateString('ar-SA')}
                         </TableCell>
                         <TableCell className="text-right">{booking.booking_time}</TableCell>
+                        <TableCell className="text-right">{booking.customer_name}</TableCell>
                         <TableCell className="text-right">
                           <a
                             href={`https://wa.me/${booking.phone_number.replace(/[^0-9]/g, '')}`}

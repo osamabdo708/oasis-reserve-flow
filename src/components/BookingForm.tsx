@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -397,9 +397,9 @@ export const BookingForm = () => {
               type="button"
               onClick={handleSendVerification}
               disabled={isSendingCode || !phone}
-              variant="outline"
-              className="h-12 whitespace-nowrap"
+              className="h-12 whitespace-nowrap bg-[#25D366] hover:bg-[#20BA5A] text-white gap-2"
             >
+              <MessageCircle className="w-4 h-4" />
               {isSendingCode ? "جاري الإرسال..." : codeSent ? "إعادة الإرسال" : "إرسال الرمز"}
             </Button>
           )}
