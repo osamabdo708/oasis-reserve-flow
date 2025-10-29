@@ -21,22 +21,16 @@ serve(async (req) => {
         throw new Error('رقم الهاتف مطلوب');
       }
       
-      // Remove all non-digit characters except +
-      let normalized = phone.replace(/[^\d+]/g, '');
-      
-      // Add + if not present
-      if (!normalized.startsWith('+')) {
-        normalized = '+' + normalized;
-      }
+      // Remove all non-digit characters including +
+      const digitsOnly = phone.replace(/\D/g, '');
       
       // Validate minimum length (country code + number should be at least 10 digits)
-      const digitsOnly = normalized.replace(/\D/g, '');
       if (digitsOnly.length < 10 || digitsOnly.length > 15) {
         throw new Error('رقم الهاتف غير صحيح');
       }
       
-      // Return with + sign
-      return normalized;
+      // Return digits only (no + sign) to match verify-code function
+      return digitsOnly;
     };
     
     const phoneNumber = validatePhoneNumber(rawPhoneNumber);
@@ -104,7 +98,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: phoneNumber,
+        to: `+${phoneNumber}`,
         text: messageText,
       }),
     });
