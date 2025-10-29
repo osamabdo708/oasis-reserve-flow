@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle, MessageCircle } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Booking {
   id: string;
@@ -203,105 +204,142 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>جميع الحجوزات</CardTitle>
-                <CardDescription>
-                  إجمالي الحجوزات: {bookings.length}
-                </CardDescription>
-              </div>
-              <Button onClick={fetchBookings} disabled={isLoading}>
-                {isLoading ? "جاري التحميل..." : "تحديث"}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">جاري التحميل...</p>
-            ) : bookings.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">لا توجد حجوزات</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">التاريخ</TableHead>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">موعد الحجز</TableHead>
-                      <TableHead className="text-right">الوقت</TableHead>
-                      <TableHead className="text-right">اسم العميل</TableHead>
-                      <TableHead className="text-right">رقم الهاتف</TableHead>
-                      <TableHead className="text-right">ملاحظات</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
-                      <TableHead className="text-right">إجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bookings.map((booking) => (
-                      <TableRow key={booking.id}>
-                        <TableCell className="text-right">
-                          {new Date(booking.created_at).toLocaleDateString('ar-SA')}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {getServiceName(booking.service)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {new Date(booking.booking_date).toLocaleDateString('ar-SA')}
-                        </TableCell>
-                        <TableCell className="text-right">{booking.booking_time}</TableCell>
-                        <TableCell className="text-right">{booking.customer_name}</TableCell>
-                        <TableCell className="text-right">
-                          <a
-                            href={`https://wa.me/${booking.phone_number.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-[#25D366] hover:text-[#20BA5A] transition-colors"
-                            dir="ltr"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            {booking.phone_number}
-                          </a>
-                        </TableCell>
-                        <TableCell className="text-right">{booking.notes || "-"}</TableCell>
-                        <TableCell className="text-right">
-                          {getStatusBadge(booking.status)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {booking.status === 'pending' && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" className="gap-2">
-                                  <CheckCircle className="w-4 h-4" />
-                                  تأكيد
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>تأكيد الحجز</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    هل تريد تأكيد هذا الحجز؟ سيتم إرسال رسالة WhatsApp تلقائياً للعميل.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleApproveBooking(booking.id)}>
-                                    نعم، تأكيد الحجز
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="bookings" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+            <TabsTrigger value="bookings" className="gap-2">
+              <CalendarCheck className="w-4 h-4" />
+              الحجوزات
+            </TabsTrigger>
+            <TabsTrigger value="services" className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              الخدمات
+            </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="w-4 h-4" />
+              المنتجات
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="bookings">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>جميع الحجوزات</CardTitle>
+                    <CardDescription>
+                      إجمالي الحجوزات: {bookings.length}
+                    </CardDescription>
+                  </div>
+                  <Button onClick={fetchBookings} disabled={isLoading}>
+                    {isLoading ? "جاري التحميل..." : "تحديث"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <p className="text-center py-8 text-muted-foreground">جاري التحميل...</p>
+                ) : bookings.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">لا توجد حجوزات</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-right">التاريخ</TableHead>
+                          <TableHead className="text-right">الخدمة</TableHead>
+                          <TableHead className="text-right">موعد الحجز</TableHead>
+                          <TableHead className="text-right">الوقت</TableHead>
+                          <TableHead className="text-right">اسم العميل</TableHead>
+                          <TableHead className="text-right">رقم الهاتف</TableHead>
+                          <TableHead className="text-right">ملاحظات</TableHead>
+                          <TableHead className="text-right">الحالة</TableHead>
+                          <TableHead className="text-right">إجراءات</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bookings.map((booking) => (
+                          <TableRow key={booking.id}>
+                            <TableCell className="text-right">
+                              {new Date(booking.created_at).toLocaleDateString('ar-SA')}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {getServiceName(booking.service)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {new Date(booking.booking_date).toLocaleDateString('ar-SA')}
+                            </TableCell>
+                            <TableCell className="text-right">{booking.booking_time}</TableCell>
+                            <TableCell className="text-right">{booking.customer_name}</TableCell>
+                            <TableCell className="text-right">
+                              <a
+                                href={`https://wa.me/${booking.phone_number.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-[#25D366] hover:text-[#20BA5A] transition-colors"
+                                dir="ltr"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                {booking.phone_number}
+                              </a>
+                            </TableCell>
+                            <TableCell className="text-right">{booking.notes || "-"}</TableCell>
+                            <TableCell className="text-right">
+                              {getStatusBadge(booking.status)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {booking.status === 'pending' && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" className="gap-2">
+                                      <CheckCircle className="w-4 h-4" />
+                                      تأكيد
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>تأكيد الحجز</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        هل تريد تأكيد هذا الحجز؟ سيتم إرسال رسالة WhatsApp تلقائياً للعميل.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleApproveBooking(booking.id)}>
+                                        نعم، تأكيد الحجز
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="services">
+            <Card>
+              <CardHeader>
+                <CardTitle>إدارة الخدمات</CardTitle>
+                <CardDescription>قريباً...</CardDescription>
+              </CardHeader>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="products">
+            <Card>
+              <CardHeader>
+                <CardTitle>إدارة المنتجات</CardTitle>
+                <CardDescription>قريباً...</CardDescription>
+              </CardHeader>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
