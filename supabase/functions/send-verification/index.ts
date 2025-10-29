@@ -95,18 +95,12 @@ serve(async (req) => {
       throw new Error('فشل في تخزين رمز التحقق');
     }
 
-    // Send WhatsApp message via wasenderapi.com
-    const wasenderToken = Deno.env.get('WACHAT_TOKEN');
-    if (!wasenderToken) {
-      throw new Error('WACHAT_TOKEN not configured');
-    }
-
+    // Send WhatsApp message via new Node.js WhatsApp API
     const messageText = `رمز التحقق الخاص بك هو: ${code}\n\nهذا الرمز صالح لمدة 10 دقائق.`;
     
-    const whatsappResponse = await fetch('https://wasenderapi.com/api/send-message', {
+    const whatsappResponse = await fetch('https://wp.palmart.ps/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${wasenderToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -117,20 +111,20 @@ serve(async (req) => {
 
     const whatsappData = await whatsappResponse.json();
     
-    console.log('WaSender API response:', whatsappResponse.status, whatsappData);
+    console.log('WhatsApp API response:', whatsappResponse.status, whatsappData);
     
     if (!whatsappResponse.ok) {
-      console.error('WaSender API error:', whatsappData);
+      console.error('WhatsApp API error:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
     // Check if response indicates success
     if (!whatsappData.success) {
-      console.error('WaSender API returned unsuccessful response:', whatsappData);
+      console.error('WhatsApp API returned unsuccessful response:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
-    console.log('Verification code sent successfully, msgId:', whatsappData.data?.msgId);
+    console.log('Verification code sent successfully, messageId:', whatsappData.messageId);
 
     return new Response(
       JSON.stringify({ success: true, message: 'تم إرسال رمز التحقق' }), 
