@@ -58,13 +58,21 @@ serve(async (req) => {
     // Send WhatsApp confirmation message
     const messageText = `مرحباً ${booking.customer_name}! ✅\n\nتم تأكيد حجزك بنجاح:\n\nالخدمة: ${booking.service}\nالتاريخ: ${booking.booking_date}\nالوقت: ${booking.booking_time}\n\nنتطلع لرؤيتك! 🌟`;
     
+    // Format phone number to ensure it has + prefix
+    const phoneNumber = booking.phone_number.startsWith('+') 
+      ? booking.phone_number 
+      : `+${booking.phone_number}`;
+    
+    console.log('Sending WhatsApp to:', phoneNumber);
+    
     const whatsappResponse = await fetch('https://wp.palmart.ps/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('WACHAT_TOKEN')}`,
       },
       body: JSON.stringify({
-        to: booking.phone_number.startsWith('+') ? booking.phone_number : `+${booking.phone_number}`,
+        to: phoneNumber,
         text: messageText,
       }),
     });
