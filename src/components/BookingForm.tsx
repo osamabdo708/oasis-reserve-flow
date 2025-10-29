@@ -363,6 +363,8 @@ export const BookingForm = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="+970">🇵🇸 +970</SelectItem>
+              <SelectItem value="+972">🇮🇱 +972</SelectItem>
               {/* <SelectItem value="+966">🇸🇦 +966</SelectItem>
               <SelectItem value="+971">🇦🇪 +971</SelectItem>
               <SelectItem value="+973">🇧🇭 +973</SelectItem>
@@ -372,8 +374,7 @@ export const BookingForm = () => {
               <SelectItem value="+20">🇪🇬 +20</SelectItem>
               <SelectItem value="+962">🇯🇴 +962</SelectItem>
               <SelectItem value="+961">🇱🇧 +961</SelectItem> */}
-              <SelectItem value="+970">🇵🇸 +970</SelectItem>
-              <SelectItem value="+972">🇮🇱 +972</SelectItem>
+
             </SelectContent>
           </Select>
           <Input
