@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 const services = [
   { id: "massage", name: "مساج استرخائي", price: "200 ريال" },
@@ -51,6 +52,56 @@ export const BookingForm = () => {
   const [isVerified, setIsVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Bookings state
+  const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
+  // Fetch existing bookings for the selected date
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!date) return;
+
+      setIsLoadingBookings(true);
+      try {
+        const dateStr = date.toISOString().split('T')[0];
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('booking_date, booking_time')
+          .eq('booking_date', dateStr)
+          .in('status', ['pending', 'confirmed']);
+
+        if (error) throw error;
+
+        // Group booked times by date
+        const slots: { [key: string]: string[] } = {};
+        data?.forEach((booking) => {
+          if (!slots[booking.booking_date]) {
+            slots[booking.booking_date] = [];
+          }
+          slots[booking.booking_date].push(booking.booking_time);
+        });
+
+        setBookedSlots(slots);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    };
+
+    fetchBookings();
+  }, [date]);
+
+  // Get booked times for the selected date
+  const bookedTimesForSelectedDate = date 
+    ? bookedSlots[date.toISOString().split('T')[0]] || []
+    : [];
+
+  // Check if a time slot is available
+  const isTimeSlotAvailable = (time: string) => {
+    return !bookedTimesForSelectedDate.includes(time);
+  };
 
   const handleSendVerification = async () => {
     if (!phone) {
@@ -253,18 +304,44 @@ export const BookingForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="time" className="text-base">الوقت *</Label>
-        <Select value={selectedTime} onValueChange={setSelectedTime}>
-          <SelectTrigger id="time" className="h-12">
-            <SelectValue placeholder="اختر الوقت" />
-          </SelectTrigger>
-          <SelectContent>
-            {timeSlots.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isLoadingBookings ? (
+          <div className="h-12 flex items-center justify-center border rounded-md bg-muted/50">
+            <p className="text-sm text-muted-foreground">جاري التحميل...</p>
+          </div>
+        ) : !date ? (
+          <div className="h-12 flex items-center justify-center border rounded-md bg-muted/50">
+            <p className="text-sm text-muted-foreground">الرجاء اختيار التاريخ أولاً</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {timeSlots.map((time) => {
+              const isAvailable = isTimeSlotAvailable(time);
+              const isSelected = selectedTime === time;
+              
+              return (
+                <button
+                  key={time}
+                  type="button"
+                  onClick={() => isAvailable && setSelectedTime(time)}
+                  disabled={!isAvailable}
+                  className={cn(
+                    "h-12 rounded-md border-2 transition-all font-medium",
+                    isSelected && isAvailable && "border-primary bg-primary text-primary-foreground",
+                    !isSelected && isAvailable && "border-border hover:border-primary hover:bg-primary/10",
+                    !isAvailable && "border-destructive/20 bg-destructive/5 cursor-not-allowed opacity-50"
+                  )}
+                >
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <span className="text-sm">{time}</span>
+                    {!isAvailable && (
+                      <Badge variant="destructive" className="text-xs px-1 py-0 h-4">محجوز</Badge>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
