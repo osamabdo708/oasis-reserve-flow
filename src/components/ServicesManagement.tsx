@@ -56,6 +56,9 @@ export const ServicesManagement = () => {
     is_active: true,
     display_order: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -87,10 +90,31 @@ export const ServicesManagement = () => {
     e.preventDefault();
     
     try {
+      setIsUploading(true);
+      let finalImageUrl = formData.image_url;
+
+      // Upload image if file is selected
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('service-images')
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('service-images')
+          .getPublicUrl(fileName);
+
+        finalImageUrl = publicUrl;
+      }
+
       const serviceData = {
         name: formData.name,
         description: formData.description || null,
-        image_url: formData.image_url,
+        image_url: finalImageUrl,
         price: parseFloat(formData.price),
         currency: formData.currency,
         is_active: formData.is_active,
@@ -132,6 +156,8 @@ export const ServicesManagement = () => {
         description: error.message || "فشل في حفظ الخدمة",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -146,7 +172,20 @@ export const ServicesManagement = () => {
       is_active: service.is_active,
       display_order: service.display_order?.toString() || "",
     });
+    setImagePreview(service.image_url);
     setIsDialogOpen(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -210,6 +249,8 @@ export const ServicesManagement = () => {
       display_order: "",
     });
     setEditingService(null);
+    setImageFile(null);
+    setImagePreview("");
   };
 
   return (
@@ -262,12 +303,33 @@ export const ServicesManagement = () => {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="image_url">رابط الصورة *</Label>
+                    <Label htmlFor="image">صورة الخدمة *</Label>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img 
+                          src={imagePreview} 
+                          alt="معاينة" 
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      أو أدخل رابط الصورة يدوياً:
+                    </p>
                     <Input
                       id="image_url"
+                      placeholder="https://example.com/image.jpg"
                       value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                      required
+                      onChange={(e) => {
+                        setFormData({ ...formData, image_url: e.target.value });
+                        setImagePreview(e.target.value);
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -302,8 +364,8 @@ export const ServicesManagement = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">
-                    {editingService ? "حفظ التعديلات" : "إضافة"}
+                  <Button type="submit" disabled={isUploading}>
+                    {isUploading ? "جاري الرفع..." : editingService ? "حفظ التعديلات" : "إضافة"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -321,6 +383,7 @@ export const ServicesManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">الصورة</TableHead>
                   <TableHead className="text-right">الترتيب</TableHead>
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">الوصف</TableHead>
@@ -332,6 +395,13 @@ export const ServicesManagement = () => {
               <TableBody>
                 {services.map((service) => (
                   <TableRow key={service.id}>
+                    <TableCell className="text-right">
+                      <img 
+                        src={service.image_url} 
+                        alt={service.name}
+                        className="w-16 h-16 object-cover rounded-lg"
+                      />
+                    </TableCell>
                     <TableCell className="text-right">{service.display_order || "-"}</TableCell>
                     <TableCell className="text-right font-medium">{service.name}</TableCell>
                     <TableCell className="text-right max-w-xs truncate">

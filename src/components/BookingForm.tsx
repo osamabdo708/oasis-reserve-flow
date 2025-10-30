@@ -24,22 +24,14 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
-const services = [
-  { id: "massage", name: "مساج استرخائي", price: "200 ريال" },
-  { id: "skincare", name: "عناية بالبشرة", price: "150 ريال" },
-  { id: "hammam", name: "حمام مغربي", price: "180 ريال" },
-  { id: "facial", name: "تنظيف البشرة", price: "120 ريال" },
-];
+interface BookingFormProps {
+  preSelectedService?: string;
+  preSelectedServiceName?: string;
+}
 
-const timeSlots = [
-  "09:00 ص", "10:00 ص", "11:00 ص", "12:00 م",
-  "01:00 م", "02:00 م", "03:00 م", "04:00 م",
-  "05:00 م", "06:00 م", "07:00 م", "08:00 م",
-];
-
-export const BookingForm = () => {
+export const BookingForm = ({ preSelectedService, preSelectedServiceName }: BookingFormProps) => {
   const [date, setDate] = useState<Date>();
-  const [selectedService, setSelectedService] = useState("");
+  const [selectedService] = useState(preSelectedService || "");
   const [selectedTime, setSelectedTime] = useState("");
   const [name, setName] = useState("");
   const [countryCode, setCountryCode] = useState("+970");
@@ -56,6 +48,12 @@ export const BookingForm = () => {
   // Bookings state
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
+  const timeSlots = [
+    "09:00 ص", "10:00 ص", "11:00 ص", "12:00 م",
+    "01:00 م", "02:00 م", "03:00 م", "04:00 م",
+    "05:00 م", "06:00 م", "07:00 م", "08:00 م",
+  ];
 
   // Fetch existing bookings for the selected date
   useEffect(() => {
@@ -235,13 +233,12 @@ export const BookingForm = () => {
         description: `سيتم التواصل معك قريباً على الرقم ${countryCode}${phone}`,
       });
 
-      // Reset form
-      setSelectedService("");
+      // Reset form (keep service selected)
       setDate(undefined);
       setSelectedTime("");
       setName("");
       setPhone("");
-      setCountryCode("+966");
+      setCountryCode("+970");
       setNotes("");
       setVerificationCode("");
       setCodeSent(false);
@@ -258,21 +255,12 @@ export const BookingForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-2">
-        <Label htmlFor="service" className="text-base">نوع الخدمة *</Label>
-        <Select value={selectedService} onValueChange={setSelectedService}>
-          <SelectTrigger id="service" className="h-12">
-            <SelectValue placeholder="اختر الخدمة" />
-          </SelectTrigger>
-          <SelectContent>
-            {services.map((service) => (
-              <SelectItem key={service.id} value={service.id}>
-                {service.name} - {service.price}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {preSelectedServiceName && (
+        <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg text-center">
+          <p className="text-sm text-muted-foreground">الخدمة المختارة</p>
+          <p className="text-lg font-bold text-primary">{preSelectedServiceName}</p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label className="text-base">التاريخ *</Label>

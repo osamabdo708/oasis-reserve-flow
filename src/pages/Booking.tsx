@@ -1,9 +1,19 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookingForm } from "@/components/BookingForm";
+import { ServiceSelector } from "@/components/ServiceSelector";
 import { ArrowRight } from "lucide-react";
 
 const Booking = () => {
+  const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedServiceName, setSelectedServiceName] = useState<string>("");
+
+  const handleServiceSelect = (serviceId: string, serviceName: string) => {
+    setSelectedService(serviceId);
+    setSelectedServiceName(serviceName);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       <header className="container mx-auto px-4 py-6">
@@ -21,11 +31,27 @@ const Booking = () => {
             احجز موعدك
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            املأ النموذج أدناه وسنتواصل معك لتأكيد الحجز
+            اختر الخدمة المفضلة لديك ثم املأ النموذج لتأكيد الحجز
           </p>
         </div>
 
-        <BookingForm />
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-center mb-6">اختر الخدمة</h2>
+          <ServiceSelector 
+            selectedService={selectedService}
+            onServiceSelect={handleServiceSelect}
+          />
+        </div>
+
+        {selectedService && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-center mb-6">تفاصيل الحجز</h2>
+            <BookingForm 
+              preSelectedService={selectedService}
+              preSelectedServiceName={selectedServiceName}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
