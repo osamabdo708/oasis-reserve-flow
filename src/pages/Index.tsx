@@ -1,33 +1,44 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ServiceCard";
 import heroImage from "@/assets/hero-spa.jpg";
-import massageImage from "@/assets/massage.jpg";
-import skincareImage from "@/assets/skincare.jpg";
-import hammamImage from "@/assets/hammam.jpg";
 import { Calendar, Clock, MapPin, Phone } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string;
+  price: number;
+  currency: string;
+}
 
 const Index = () => {
-  const services = [
-    {
-      title: "مساج استرخائي",
-      description: "جلسة مساج متكاملة للاسترخاء التام وتخفيف التوتر مع زيوت طبيعية فاخرة",
-      image: massageImage,
-      price: "من 200 ريال",
-    },
-    {
-      title: "عناية بالبشرة",
-      description: "برامج عناية متخصصة لجميع أنواع البشرة باستخدام منتجات طبيعية عالية الجودة",
-      image: skincareImage,
-      price: "من 150 ريال",
-    },
-    {
-      title: "حمام مغربي",
-      description: "تجربة تقليدية أصيلة للتنظيف العميق والاسترخاء مع الصابون البلدي المغربي",
-      image: hammamImage,
-      price: "من 180 ريال",
-    },
-  ];
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -79,9 +90,21 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {services.map((service, index) => (
-              <ServiceCard key={index} {...service} />
-            ))}
+            {isLoading ? (
+              <p className="col-span-full text-center text-muted-foreground">جاري التحميل...</p>
+            ) : services.length === 0 ? (
+              <p className="col-span-full text-center text-muted-foreground">لا توجد خدمات متاحة</p>
+            ) : (
+              services.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  title={service.name}
+                  description={service.description || ""}
+                  image={service.image_url}
+                  price={`من ${service.price} ${service.currency}`}
+                />
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12">

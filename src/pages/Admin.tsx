@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package } from "lucide-react";
+import { ServicesManagement } from "@/components/ServicesManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -329,12 +330,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="services">
-            <Card>
-              <CardHeader>
-                <CardTitle>إدارة الخدمات</CardTitle>
-                <CardDescription>قريباً...</CardDescription>
-              </CardHeader>
-            </Card>
+            <ServicesManagement />
           </TabsContent>
 
           <TabsContent value="products">
