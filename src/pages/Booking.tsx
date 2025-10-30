@@ -6,13 +6,7 @@ import { ServiceSelector } from "@/components/ServiceSelector";
 import { ArrowRight } from "lucide-react";
 
 const Booking = () => {
-  const [selectedService, setSelectedService] = useState<string>("");
-  const [selectedServiceName, setSelectedServiceName] = useState<string>("");
-
-  const handleServiceSelect = (serviceId: string, serviceName: string) => {
-    setSelectedService(serviceId);
-    setSelectedServiceName(serviceName);
-  };
+  const [selectedService, setSelectedService] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -30,26 +24,22 @@ const Booking = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             احجز موعدك
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            اختر الخدمة المفضلة لديك ثم املأ النموذج لتأكيد الحجز
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            اختر الخدمة المناسبة لك ثم املأ النموذج
           </p>
         </div>
 
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-center mb-6">اختر الخدمة</h2>
-          <ServiceSelector 
+          <ServiceSelector
             selectedService={selectedService}
-            onServiceSelect={handleServiceSelect}
+            onServiceSelect={(serviceName) => setSelectedService(serviceName)}
           />
         </div>
 
         {selectedService && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold text-center mb-6">تفاصيل الحجز</h2>
-            <BookingForm 
-              preSelectedService={selectedService}
-              preSelectedServiceName={selectedServiceName}
-            />
+            <BookingForm preSelectedService={selectedService} preSelectedServiceName={selectedService} />
           </div>
         )}
       </main>

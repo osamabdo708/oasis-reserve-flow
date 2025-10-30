@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2 } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Service {
   id: string;
@@ -14,8 +15,8 @@ interface Service {
 }
 
 interface ServiceSelectorProps {
-  selectedService?: string;
-  onServiceSelect: (serviceId: string, serviceName: string) => void;
+  selectedService: string | null;
+  onServiceSelect: (serviceName: string) => void;
 }
 
 export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSelectorProps) => {
@@ -45,22 +46,22 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
 
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        جاري تحميل الخدمات...
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">جاري تحميل الخدمات...</p>
       </div>
     );
   }
 
   if (services.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        لا توجد خدمات متاحة
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">لا توجد خدمات متاحة</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full px-12">
+    <div className="w-full max-w-5xl mx-auto px-12">
       <Carousel
         opts={{
           align: "start",
@@ -68,53 +69,44 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
         }}
         className="w-full"
       >
-        <CarouselContent>
-          {services.map((service) => {
-            const isSelected = selectedService === service.id;
-            return (
-              <CarouselItem key={service.id} className="md:basis-1/2 lg:basis-1/3">
-                <Card
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                    isSelected ? "ring-2 ring-primary shadow-lg" : ""
-                  }`}
-                  onClick={() => onServiceSelect(service.id, service.name)}
-                >
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <div className="aspect-square overflow-hidden rounded-t-lg">
-                        <img
-                          src={service.image_url}
-                          alt={service.name}
-                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        />
-                      </div>
-                      {isSelected && (
-                        <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full p-2">
-                          <CheckCircle2 className="w-5 h-5" />
-                        </div>
-                      )}
+        <CarouselContent className="-ml-2 md:-ml-4">
+          {services.map((service) => (
+            <CarouselItem key={service.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+              <Card
+                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                  selectedService === service.name
+                    ? "ring-2 ring-primary shadow-lg"
+                    : "hover:shadow-md"
+                }`}
+                onClick={() => onServiceSelect(service.name)}
+              >
+                <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                  <img
+                    src={service.image_url}
+                    alt={service.name}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  {selectedService === service.name && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1.5">
+                      <Check className="w-4 h-4" />
                     </div>
-                    <div className="p-4 text-center">
-                      <h3 className="text-lg font-bold mb-2 text-foreground">
-                        {service.name}
-                      </h3>
-                      {service.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {service.description}
-                        </p>
-                      )}
-                      <p className="text-accent font-bold text-lg">
-                        من {service.price} {service.currency}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            );
-          })}
+                  )}
+                </div>
+                <CardContent className="p-4 text-center">
+                  <h3 className="text-lg font-bold mb-2 text-foreground">{service.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                    {service.description}
+                  </p>
+                  <Badge variant="secondary" className="text-base font-bold">
+                    {service.price} {service.currency}
+                  </Badge>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious className="left-0" />
+        <CarouselNext className="right-0" />
       </Carousel>
     </div>
   );

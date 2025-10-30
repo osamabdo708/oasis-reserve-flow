@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,8 @@ export const ServicesManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -56,9 +58,6 @@ export const ServicesManagement = () => {
     is_active: true,
     display_order: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -86,35 +85,69 @@ export const ServicesManagement = () => {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "خطأ",
+        description: "يرجى اختيار ملف صورة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "خطأ",
+        description: "حجم الملف يجب أن يكون أقل من 5 ميجابايت",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("service-images")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from("service-images")
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, image_url: data.publicUrl });
+      
+      toast({
+        title: "تم الرفع",
+        description: "تم رفع الصورة بنجاح",
+      });
+    } catch (error: any) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في رفع الصورة",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      setIsUploading(true);
-      let finalImageUrl = formData.image_url;
-
-      // Upload image if file is selected
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('service-images')
-          .upload(fileName, imageFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('service-images')
-          .getPublicUrl(fileName);
-
-        finalImageUrl = publicUrl;
-      }
-
       const serviceData = {
         name: formData.name,
         description: formData.description || null,
-        image_url: finalImageUrl,
+        image_url: formData.image_url,
         price: parseFloat(formData.price),
         currency: formData.currency,
         is_active: formData.is_active,
@@ -156,8 +189,6 @@ export const ServicesManagement = () => {
         description: error.message || "فشل في حفظ الخدمة",
         variant: "destructive",
       });
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -172,20 +203,7 @@ export const ServicesManagement = () => {
       is_active: service.is_active,
       display_order: service.display_order?.toString() || "",
     });
-    setImagePreview(service.image_url);
     setIsDialogOpen(true);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleDelete = async (id: string) => {
@@ -249,8 +267,6 @@ export const ServicesManagement = () => {
       display_order: "",
     });
     setEditingService(null);
-    setImageFile(null);
-    setImagePreview("");
   };
 
   return (
@@ -303,34 +319,40 @@ export const ServicesManagement = () => {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="image">صورة الخدمة *</Label>
-                    <Input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                    {imagePreview && (
-                      <div className="mt-2">
-                        <img 
-                          src={imagePreview} 
-                          alt="معاينة" 
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      </div>
+                    <Label htmlFor="image_url">صورة الخدمة *</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="image_url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                        placeholder="رابط الصورة أو قم بالرفع"
+                        required
+                      />
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {isUploading ? "جاري الرفع..." : "رفع"}
+                      </Button>
+                    </div>
+                    {formData.image_url && (
+                      <img
+                        src={formData.image_url}
+                        alt="معاينة"
+                        className="w-full h-32 object-cover rounded-md mt-2"
+                      />
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      أو أدخل رابط الصورة يدوياً:
-                    </p>
-                    <Input
-                      id="image_url"
-                      placeholder="https://example.com/image.jpg"
-                      value={formData.image_url}
-                      onChange={(e) => {
-                        setFormData({ ...formData, image_url: e.target.value });
-                        setImagePreview(e.target.value);
-                      }}
-                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -364,8 +386,8 @@ export const ServicesManagement = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={isUploading}>
-                    {isUploading ? "جاري الرفع..." : editingService ? "حفظ التعديلات" : "إضافة"}
+                  <Button type="submit">
+                    {editingService ? "حفظ التعديلات" : "إضافة"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -396,10 +418,10 @@ export const ServicesManagement = () => {
                 {services.map((service) => (
                   <TableRow key={service.id}>
                     <TableCell className="text-right">
-                      <img 
-                        src={service.image_url} 
+                      <img
+                        src={service.image_url}
                         alt={service.name}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="w-16 h-16 object-cover rounded-md"
                       />
                     </TableCell>
                     <TableCell className="text-right">{service.display_order || "-"}</TableCell>
