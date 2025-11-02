@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { supabase } from "@/integrations/supabase/client";
 import { Check } from "lucide-react";
+import massageImg from "@/assets/massage.jpg";
+import hammamImg from "@/assets/hammam.jpg";
+import skincareImg from "@/assets/skincare.jpg";
 
 interface Service {
   id: string;
@@ -26,6 +29,21 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
   useEffect(() => {
     fetchServices();
   }, []);
+
+  const getServiceImage = (imageUrl: string, serviceName: string) => {
+    // If the image_url starts with http/https, use it directly (uploaded images)
+    if (imageUrl?.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // Otherwise, use the imported local images based on service name
+    if (serviceName.includes('مساج')) return massageImg;
+    if (serviceName.includes('حمام')) return hammamImg;
+    if (serviceName.includes('عناية')) return skincareImg;
+    
+    // Default fallback
+    return massageImg;
+  };
 
   const fetchServices = async () => {
     try {
@@ -82,7 +100,7 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
               >
                 <div className="relative aspect-square overflow-hidden rounded-t-lg">
                   <img
-                    src={service.image_url}
+                    src={getServiceImage(service.image_url, service.name)}
                     alt={service.name}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                   />
