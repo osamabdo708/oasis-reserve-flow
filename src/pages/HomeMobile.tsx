@@ -6,6 +6,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import heroImage from "@/assets/hero-spa.jpg";
 import { Calendar, Clock, MapPin, Phone, Menu, Home, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import massageImg from "@/assets/massage.jpg";
+import hammamImg from "@/assets/hammam.jpg";
+import skincareImg from "@/assets/skincare.jpg";
 
 interface Service {
   id: string;
@@ -19,6 +22,13 @@ interface Service {
 const HomeMobile = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const getServiceImage = (imageUrl: string, serviceName: string) => {
+    if (imageUrl?.startsWith('http')) return imageUrl;
+    if (serviceName.includes('مساج')) return massageImg;
+    if (serviceName.includes('حمام')) return hammamImg;
+    if (serviceName.includes('عناية')) return skincareImg;
+    return massageImg;
+  };
 
   useEffect(() => {
     fetchServices();
@@ -121,7 +131,7 @@ const HomeMobile = () => {
                   key={service.id}
                   title={service.name}
                   description={service.description || ""}
-                  image={service.image_url}
+                  image={getServiceImage(service.image_url, service.name)}
                   price={`من ${service.price} ${service.currency}`}
                 />
               ))

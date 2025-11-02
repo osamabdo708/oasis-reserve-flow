@@ -440,6 +440,7 @@ export const ServicesManagement = () => {
                         src={getServiceImage(service.image_url, service.name)}
                         alt={service.name}
                         className="w-16 h-16 object-cover rounded-md"
+                        onError={(e) => { e.currentTarget.src = getServiceImage('', service.name); }}
                       />
                     </TableCell>
                     <TableCell className="text-right">{service.display_order || "-"}</TableCell>

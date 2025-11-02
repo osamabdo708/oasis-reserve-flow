@@ -1,4 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
+import massageImg from "@/assets/massage.jpg";
+import hammamImg from "@/assets/hammam.jpg";
+import skincareImg from "@/assets/skincare.jpg";
 
 interface ServiceCardProps {
   title: string;
@@ -8,6 +11,13 @@ interface ServiceCardProps {
 }
 
 export const ServiceCard = ({ title, description, image, price }: ServiceCardProps) => {
+  const getFallback = () => {
+    if (title.includes('مساج')) return massageImg;
+    if (title.includes('حمام')) return hammamImg;
+    if (title.includes('عناية')) return skincareImg;
+    return massageImg;
+  };
+
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-[var(--shadow-card)] hover:-translate-y-1">
       <div className="aspect-square overflow-hidden">
@@ -15,6 +25,7 @@ export const ServiceCard = ({ title, description, image, price }: ServiceCardPro
           src={image} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => { e.currentTarget.src = getFallback(); }}
         />
       </div>
       <CardContent className="p-6 text-center">

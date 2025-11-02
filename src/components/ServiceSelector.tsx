@@ -103,6 +103,7 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
                     src={getServiceImage(service.image_url, service.name)}
                     alt={service.name}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                    onError={(e) => { e.currentTarget.src = getServiceImage('', service.name); }}
                   />
                   {selectedService === service.name && (
                     <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1.5">

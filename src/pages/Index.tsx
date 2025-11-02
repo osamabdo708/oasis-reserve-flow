@@ -5,6 +5,9 @@ import { ServiceCard } from "@/components/ServiceCard";
 import heroImage from "@/assets/hero-spa.jpg";
 import { Calendar, Clock, MapPin, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import massageImg from "@/assets/massage.jpg";
+import hammamImg from "@/assets/hammam.jpg";
+import skincareImg from "@/assets/skincare.jpg";
 
 interface Service {
   id: string;
@@ -18,6 +21,15 @@ interface Service {
 const Index = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const getServiceImage = (imageUrl: string, serviceName: string) => {
+    if (imageUrl?.startsWith('http')) return imageUrl;
+    if (serviceName.includes('مساج')) return massageImg;
+    if (serviceName.includes('حمام')) return hammamImg;
+    if (serviceName.includes('عناية')) return skincareImg;
+    return massageImg;
+  };
+
 
   useEffect(() => {
     fetchServices();
@@ -100,7 +112,7 @@ const Index = () => {
                   key={service.id}
                   title={service.name}
                   description={service.description || ""}
-                  image={service.image_url}
+                  image={getServiceImage(service.image_url, service.name)}
                   price={`من ${service.price} ${service.currency}`}
                 />
               ))
