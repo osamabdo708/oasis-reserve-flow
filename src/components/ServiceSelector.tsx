@@ -28,6 +28,26 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
 
   useEffect(() => {
     fetchServices();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('services-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'services'
+        },
+        () => {
+          fetchServices();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const getServiceImage = (imageUrl: string, serviceName: string) => {
