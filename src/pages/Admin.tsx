@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package } from "lucide-react";
 import { ServicesManagement } from "@/components/ServicesManagement";
+import { ProductsManagement } from "@/components/ProductsManagement";
+import { OrdersManagement } from "@/components/OrdersManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -206,7 +208,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -218,6 +220,10 @@ const Admin = () => {
             <TabsTrigger value="products" className="gap-2">
               <Package className="w-4 h-4" />
               المنتجات
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2">
+              <Package className="w-4 h-4" />
+              الطلبات
             </TabsTrigger>
           </TabsList>
 
@@ -334,12 +340,11 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="products">
-            <Card>
-              <CardHeader>
-                <CardTitle>إدارة المنتجات</CardTitle>
-                <CardDescription>قريباً...</CardDescription>
-              </CardHeader>
-            </Card>
+            <ProductsManagement />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrdersManagement />
           </TabsContent>
         </Tabs>
       </main>
