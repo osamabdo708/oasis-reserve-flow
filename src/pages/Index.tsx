@@ -76,17 +76,17 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center" >
             <Link to="/booking">
-              <Button variant="spa" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto" style:"    background: #0000006e!important;border:unset!important;" >
+              <Button variant="spa" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto"  >
                 احجز الآن
               </Button>
             </Link>
             <Link to="/shop">
-              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary" style:"    background: #0000006e!important;border:unset!important;" >
+              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"  >
                 المتجر
               </Button>
             </Link>
             <Link to="/booking-track">
-              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary" style:"    background: #0000006e!important;border:unset!important;" >
+              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary" >
                 تتبع حجزك
               </Button>
             </Link>
