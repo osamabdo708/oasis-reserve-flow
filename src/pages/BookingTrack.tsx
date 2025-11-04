@@ -139,16 +139,17 @@ const BookingTrack = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
-      <header className="container mx-auto px-4 py-6">
-        <Link to="/">
-          <Button variant="ghost" className="gap-2">
-            <ArrowRight className="w-4 h-4" />
-            العودة للرئيسية
-          </Button>
-        </Link>
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
+        <div className="container mx-auto px-4 py-4 max-w-6xl">
+          <Link to="/">
+            <Button variant="ghost" size="icon">
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 pb-20">
+      <main className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             تتبع حجزك
