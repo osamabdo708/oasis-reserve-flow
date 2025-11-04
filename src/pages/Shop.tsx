@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, Plus, Minus, X } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import faceCream from "@/assets/product-face-cream.jpg";
 import massageOil from "@/assets/product-massage-oil.jpg";
 import mudMask from "@/assets/product-mud-mask.jpg";
@@ -177,28 +178,37 @@ const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30" dir="rtl">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">المتجر</h1>
-          <Button
-            variant="outline"
-            onClick={() => setShowCart(!showCart)}
-            className="relative"
-          >
-            <ShoppingCart className="ml-2" />
-            السلة
-            {cart.length > 0 && (
-              <Badge className="absolute -top-2 -left-2">{cart.length}</Badge>
-            )}
-          </Button>
+        <div className="container mx-auto px-4 py-4 max-w-6xl">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Link to="/">
+                <Button variant="ghost" size="icon">
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">المتجر</h1>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowCart(!showCart)}
+              className="relative"
+            >
+              <ShoppingCart className="ml-2" />
+              السلة
+              {cart.length > 0 && (
+                <Badge className="absolute -top-2 -left-2">{cart.length}</Badge>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map(product => (
             <Card key={product.id} className="group hover:shadow-lg transition-shadow">
               {product.image_url && (
