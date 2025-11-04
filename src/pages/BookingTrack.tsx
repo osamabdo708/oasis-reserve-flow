@@ -146,6 +146,7 @@ const BookingTrack = () => {
               <ArrowRight className="h-5 w-5" />
             </Button>
           </Link>
+           <h1 className="text-2xl md:text-3xl font-bold text-foreground">تتبع حجزك</h1>
         </div>
       </header>
 
