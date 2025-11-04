@@ -141,12 +141,14 @@ const BookingTrack = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-4 max-w-6xl">
+           <div className="flex items-center gap-4">
           <Link to="/">
             <Button variant="ghost" size="icon">
               <ArrowRight className="h-5 w-5" />
             </Button>
           </Link>
            <h1 className="text-2xl md:text-3xl font-bold text-foreground">تتبع حجزك</h1>
+           </div>
         </div>
       </header>
 
