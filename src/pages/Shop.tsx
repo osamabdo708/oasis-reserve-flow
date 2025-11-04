@@ -7,6 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Plus, Minus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import faceCream from "@/assets/product-face-cream.jpg";
+import massageOil from "@/assets/product-massage-oil.jpg";
+import mudMask from "@/assets/product-mud-mask.jpg";
+import bodyScrub from "@/assets/product-body-scrub.jpg";
+import bathSalts from "@/assets/product-bath-salts.jpg";
 
 interface Product {
   id: string;
@@ -47,6 +52,17 @@ const Shop = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const getProductImage = (imageUrl: string) => {
+    const imageMap: Record<string, string> = {
+      'product-face-cream.jpg': faceCream,
+      'product-massage-oil.jpg': massageOil,
+      'product-mud-mask.jpg': mudMask,
+      'product-body-scrub.jpg': bodyScrub,
+      'product-bath-salts.jpg': bathSalts,
+    };
+    return imageMap[imageUrl] || imageUrl;
+  };
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
@@ -188,7 +204,7 @@ const Shop = () => {
               {product.image_url && (
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={product.image_url}
+                    src={getProductImage(product.image_url)}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
