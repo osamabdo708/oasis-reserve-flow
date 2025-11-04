@@ -74,19 +74,19 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 text-white/95 leading-relaxed drop-shadow">
             رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center" >
             <Link to="/booking">
-              <Button variant="spa" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto">
+              <Button variant="spa" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto" style:"    background: #0000006e!important;border:unset!important;" >
                 احجز الآن
               </Button>
             </Link>
             <Link to="/shop">
-              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary">
+              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary" style:"    background: #0000006e!important;border:unset!important;" >
                 المتجر
               </Button>
             </Link>
             <Link to="/booking-track">
-              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary">
+              <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary" style:"    background: #0000006e!important;border:unset!important;" >
                 تتبع حجزك
               </Button>
             </Link>
