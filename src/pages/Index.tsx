@@ -54,26 +54,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="container mx-auto px-4 py-4 max-w-6xl">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">منتجع السكينة الصحي</h1>
-            <nav className="flex gap-2">
-              <Link to="/booking">
-                <Button variant="ghost">احجز موعدك</Button>
-              </Link>
-              <Link to="/shop">
-                <Button variant="ghost">المتجر</Button>
-              </Link>
-              <Link to="/booking-track">
-                <Button variant="ghost">تتبع حجزك</Button>
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div 
@@ -94,6 +74,15 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 text-white/95 leading-relaxed drop-shadow">
             رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
           </p>
+<div className="flex flex-col sm:flex-row gap-4 justify-center items-center" >
+   <Link to="/booking">
+   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"  style={{ background: '#0000006e', border: 'unset' }} > احجز الآن </Button> </Link> 
+   <Link to="/shop">
+   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"   style={{ background: '#0000006e', border: 'unset' }} > المتجر </Button> </Link> 
+   <Link to="/booking-track">
+   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"  style={{ background: '#0000006e', border: 'unset' }}  > تتبع حجزك </Button> </Link> 
+</div>
+
         </div>
       </section>
 
