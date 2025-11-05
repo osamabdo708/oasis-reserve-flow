@@ -99,17 +99,17 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-12">
+    <div className="w-full max-w-5xl mx-auto px-4 md:px-12">
       <Carousel
         opts={{
-          align: "start",
+          align: "center",
           loop: true,
         }}
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {services.map((service) => (
-            <CarouselItem key={service.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+            <CarouselItem key={service.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
               <Card
                 className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
                   selectedService === service.name
@@ -144,8 +144,8 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-0" />
-        <CarouselNext className="right-0" />
+        <CarouselPrevious className="-left-4 md:left-0" />
+        <CarouselNext className="-right-4 md:right-0" />
       </Carousel>
     </div>
   );
