@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Product {
@@ -23,6 +23,8 @@ export const ProductsManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -58,6 +60,46 @@ export const ProductsManagement = () => {
       toast({ title: "خطأ في تحميل المنتجات", variant: "destructive" });
     } else {
       setProducts(data || []);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "يرجى اختيار ملف صورة", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "حجم الملف يجب أن يكون أقل من 5 ميجابايت", variant: "destructive" });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, image_url: data.publicUrl });
+      
+      toast({ title: "تم رفع الصورة بنجاح" });
+    } catch (error: any) {
+      console.error("Error uploading file:", error);
+      toast({ title: error.message || "فشل في رفع الصورة", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -217,12 +259,38 @@ export const ProductsManagement = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">رابط الصورة</label>
-              <Input
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <label className="text-sm font-medium mb-2 block">صورة المنتج</label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="رابط الصورة أو قم بالرفع"
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploading ? "جاري الرفع..." : "رفع"}
+                </Button>
+              </div>
+              {formData.image_url && (
+                <img
+                  src={formData.image_url}
+                  alt="معاينة"
+                  className="w-full h-32 object-cover rounded-md mt-2"
+                />
+              )}
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSubmit} variant="spa" className="flex-1">
