@@ -111,8 +111,11 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
       return;
     }
 
-    // Combine country code and phone number, remove + and spaces
-    const fullPhoneNumber = `${countryCode}${phone}`.replace(/[\s+]/g, '');
+    // Combine country code and phone number, remove + and spaces, and strip leading zeros from phone part
+    let phoneDigits = phone.replace(/\D/g, '');
+    // Remove leading zeros from the phone number part only
+    phoneDigits = phoneDigits.replace(/^0+/, '');
+    const fullPhoneNumber = `${countryCode}${phoneDigits}`.replace(/[\s+]/g, '');
 
     setIsSendingCode(true);
     
@@ -151,8 +154,11 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
       return;
     }
 
-    // Combine country code and phone number, remove + and spaces
-    const fullPhoneNumber = `${countryCode}${phone}`.replace(/[\s+]/g, '');
+    // Combine country code and phone number, remove + and spaces, and strip leading zeros from phone part
+    let phoneDigits = phone.replace(/\D/g, '');
+    // Remove leading zeros from the phone number part only
+    phoneDigits = phoneDigits.replace(/^0+/, '');
+    const fullPhoneNumber = `${countryCode}${phoneDigits}`.replace(/[\s+]/g, '');
 
     setIsVerifying(true);
 

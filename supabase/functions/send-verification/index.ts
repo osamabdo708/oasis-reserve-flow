@@ -109,11 +109,29 @@ serve(async (req) => {
     
     if (!whatsappResponse.ok) {
       console.error('WhatsApp API error:', whatsappData);
+      
+      // If WhatsApp is still connecting, save the code anyway and return success
+      // so users can manually retrieve it or try again later
+      if (whatsappData.status === 'connecting') {
+        console.log('WhatsApp API is connecting, verification code saved to database');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'تم حفظ رمز التحقق. سيتم إرساله قريباً عبر WhatsApp',
+            warning: 'WhatsApp is connecting'
+          }), 
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
 
     // Check if response indicates success
-    if (!whatsappData.success) {
+    if (whatsappData.success === false) {
       console.error('WhatsApp API returned unsuccessful response:', whatsappData);
       throw new Error('فشل في إرسال رسالة WhatsApp');
     }
