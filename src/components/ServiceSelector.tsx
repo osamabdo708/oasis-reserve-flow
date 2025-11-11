@@ -151,8 +151,8 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className={isRTL ? "-right-4 md:right-0" : "-left-4 md:left-0"} />
-        <CarouselNext className={isRTL ? "-left-4 md:left-0" : "-right-4 md:right-0"} />
+        <CarouselPrevious className="-left-4 md:left-0" />
+        <CarouselNext className="-right-4 md:right-0" />
       </Carousel>
     </div>
   );
