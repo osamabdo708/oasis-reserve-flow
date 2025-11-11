@@ -67,7 +67,7 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
           .from('bookings')
           .select('booking_date, booking_time')
           .eq('booking_date', dateStr)
-          .eq('status', 'confirmed');
+          .eq('status', 'approved');
 
         if (error) throw error;
 
