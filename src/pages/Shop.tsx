@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Plus, Minus, X, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
 import faceCream from "@/assets/product-face-cream.jpg";
 import massageOil from "@/assets/product-massage-oil.jpg";
 import mudMask from "@/assets/product-mud-mask.jpg";
@@ -29,6 +29,7 @@ interface CartItem extends Product {
 }
 
 const Shop = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -184,11 +185,9 @@ const Shop = () => {
         <div className="container mx-auto px-4 py-4 max-w-6xl">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
-              </Link>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowRight className="h-5 w-5" />
+              </Button>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">المتجر</h1>
             </div>
             <Button
@@ -210,7 +209,11 @@ const Shop = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map(product => (
-            <Card key={product.id} className="group hover:shadow-lg transition-shadow">
+            <Card 
+              key={product.id} 
+              className="group hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/product/${product.id}`)}
+            >
               {product.image_url && (
                 <div className="aspect-square overflow-hidden">
                   <img
@@ -233,7 +236,10 @@ const Shop = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-2xl font-bold text-accent">{product.price} ₪</span>
                   <Button
-                    onClick={() => addToCart(product)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
                     disabled={product.stock === 0}
                     variant="spa"
                   >
