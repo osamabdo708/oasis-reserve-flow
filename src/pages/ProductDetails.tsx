@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ShoppingCart, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,11 +32,20 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [cartCount, setCartCount] = useState(0);
+
+  // Update cart count from localStorage
+  const updateCartCount = () => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const totalItems = cart.reduce((sum: number, item: any) => sum + item.quantity, 0);
+    setCartCount(totalItems);
+  };
 
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
+    updateCartCount();
   }, [id]);
 
   const fetchProduct = async () => {
@@ -81,6 +91,7 @@ const ProductDetails = () => {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
     toast.success('تمت إضافة المنتج إلى السلة');
   };
 
@@ -96,13 +107,13 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
-        <header className="bg-primary text-primary-foreground py-6 px-4">
-          <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30" dir="rtl">
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
+          <div className="container mx-auto px-4 py-4 max-w-6xl">
             <Skeleton className="h-8 w-48" />
           </div>
         </header>
-        <main className="max-w-7xl mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-12 max-w-6xl">
           <div className="grid md:grid-cols-2 gap-8">
             <Skeleton className="h-96 w-full rounded-lg" />
             <div className="space-y-4">
@@ -119,10 +130,10 @@ const ProductDetails = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center" dir="rtl">
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-4 text-foreground">المنتج غير موجود</h2>
-          <Button onClick={() => navigate('/shop')}>
+          <Button variant="spa" onClick={() => navigate('/shop')}>
             العودة إلى المتجر
             <ArrowRight className="mr-2 h-4 w-4" />
           </Button>
@@ -132,85 +143,99 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30" dir="rtl">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground py-6 px-4 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-bold">تفاصيل المنتج</h1>
-          <Button 
-            variant="secondary" 
-            onClick={() => navigate('/shop')}
-            className="gap-2"
-          >
-            العودة إلى المتجر
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
+        <div className="container mx-auto px-4 py-4 max-w-6xl">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/shop')}>
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">تفاصيل المنتج</h1>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/shop')}
+              className="relative"
+            >
+              <ShoppingCart className="ml-2" />
+              السلة
+              {cartCount > 0 && (
+                <Badge className="absolute -top-2 -left-2">{cartCount}</Badge>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Product Details */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Product Image */}
-          <div className="relative">
-            <img 
-              src={getProductImage(product.image_url || '')} 
-              alt={product.name}
-              className="w-full h-auto rounded-lg shadow-lg object-cover"
-            />
-            {product.stock === 0 && (
-              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                <span className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg text-lg font-bold">
-                  نفذت الكمية
-                </span>
-              </div>
-            )}
-          </div>
+          <Card className="overflow-hidden group">
+            <div className="relative aspect-square">
+              <img 
+                src={getProductImage(product.image_url || '')} 
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {product.stock === 0 && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Badge variant="destructive" className="text-lg px-6 py-3">
+                    نفذت الكمية
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </Card>
 
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-4xl font-bold text-foreground mb-2">{product.name}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{product.name}</h2>
               {product.category && (
-                <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm">
+                <Badge variant="secondary" className="text-sm px-3 py-1">
                   {product.category}
-                </span>
+                </Badge>
               )}
             </div>
 
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-primary">₪{product.price}</span>
+              <span className="text-3xl md:text-4xl font-bold text-accent">₪{product.price}</span>
             </div>
 
-            <div className="prose prose-lg">
-              <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+            <div>
+              <p className="text-muted-foreground leading-relaxed text-lg">{product.description}</p>
             </div>
 
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Package className="h-5 w-5" />
-              <span>الكمية المتوفرة: {product.stock}</span>
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-muted-foreground" />
+              <Badge variant={product.stock > 0 ? "default" : "destructive"}>
+                {product.stock > 0 ? `متوفر: ${product.stock}` : "نفذ"}
+              </Badge>
             </div>
 
             {/* Quantity Selector */}
             {product.stock > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-4 pt-4">
                 <div className="flex items-center gap-4">
-                  <span className="text-foreground font-semibold">الكمية:</span>
-                  <div className="flex items-center border border-border rounded-lg">
+                  <span className="text-foreground font-semibold text-lg">الكمية:</span>
+                  <div className="flex items-center border border-border rounded-lg overflow-hidden">
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={decreaseQuantity}
-                      className="px-4"
+                      className="px-4 rounded-none"
                     >
                       -
                     </Button>
-                    <span className="px-6 py-2 font-semibold text-foreground">{quantity}</span>
+                    <span className="px-6 py-2 font-semibold text-foreground min-w-[60px] text-center">{quantity}</span>
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={increaseQuantity}
-                      className="px-4"
+                      className="px-4 rounded-none"
                     >
                       +
                     </Button>
@@ -219,6 +244,7 @@ const ProductDetails = () => {
 
                 <Button 
                   onClick={handleAddToCart}
+                  variant="spa"
                   size="lg"
                   className="w-full gap-2 text-lg"
                 >
@@ -229,7 +255,7 @@ const ProductDetails = () => {
             )}
 
             {product.stock === 0 && (
-              <Button disabled size="lg" className="w-full">
+              <Button disabled size="lg" className="w-full" variant="destructive">
                 نفذت الكمية
               </Button>
             )}
