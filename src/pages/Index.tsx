@@ -67,23 +67,53 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background"></div>
         </div>
         
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
-            منتجع السكينة الصحي
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-white/95 leading-relaxed drop-shadow">
-            رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
-          </p>
-<div className="flex flex-col sm:flex-row gap-4 justify-center items-center" >
-   <Link to="/booking">
-   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"  style={{ background: '#0000006e', border: 'unset' }} > احجز الآن </Button> </Link> 
-   <Link to="/shop">
-   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"   style={{ background: '#0000006e', border: 'unset' }} > المتجر </Button> </Link> 
-   <Link to="/booking-track">
-   <Button variant="outline" size="lg" className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"  style={{ background: '#0000006e', border: 'unset' }}  > تتبع حجزك </Button> </Link> 
+<div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+  <img
+    src="https://i.ibb.co/4nZVhgP6/Picsart-25-11-18-11-07-15-991.png"
+    alt="Riea Clinic"
+    className="mx-auto mb-6 w-60 md:w-80 drop-shadow-lg"
+  />
+
+  <p className="text-xl md:text-2xl mb-8 text-white/95 leading-relaxed drop-shadow">
+    رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
+  </p>
+
+  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+    <Link to="/booking">
+      <Button
+        variant="outline"
+        size="lg"
+        className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"
+        style={{ background: "#0000006e", border: "unset" }}
+      >
+        احجز الآن
+      </Button>
+    </Link>
+
+    <Link to="/shop">
+      <Button
+        variant="outline"
+        size="lg"
+        className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"
+        style={{ background: "#0000006e", border: "unset" }}
+      >
+        المتجر
+      </Button>
+    </Link>
+
+    <Link to="/booking-track">
+      <Button
+        variant="outline"
+        size="lg"
+        className="shadow-2xl text-lg px-12 py-6 h-auto border-2 border-white text-white hover:bg-white hover:text-primary"
+        style={{ background: "#0000006e", border: "unset" }}
+      >
+        تتبع حجزك
+      </Button>
+    </Link>
+  </div>
 </div>
 
-        </div>
       </section>
 
       {/* Services Section */}
@@ -168,7 +198,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-secondary/50 py-12">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4 text-foreground">منتجع السكينة الصحي</h3>
+          <h3 className="text-2xl font-bold mb-4 text-foreground">Riea Clinic</h3>
           <p className="text-muted-foreground mb-6">
             وجهتك المثالية للاسترخاء والعناية بالنفس
           </p>
