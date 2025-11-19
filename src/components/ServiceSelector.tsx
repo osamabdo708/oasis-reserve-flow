@@ -18,8 +18,8 @@ interface Service {
 }
 
 interface ServiceSelectorProps {
-  selectedService: string | null;
-  onServiceSelect: (serviceName: string) => void;
+  selectedService: { id: string; name: string } | null;
+  onServiceSelect: (serviceId: string, serviceName: string) => void;
 }
 
 export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSelectorProps) => {
@@ -119,11 +119,11 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
             <CarouselItem key={service.id} className={`${isRTL ? "pr-2 md:pr-4" : "pl-2 md:pl-4"} basis-full md:basis-1/2 lg:basis-1/3`}>
               <Card
                 className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                  selectedService === service.name
+                  selectedService?.id === service.id
                     ? "ring-2 ring-primary shadow-lg"
                     : "hover:shadow-md"
                 }`}
-                onClick={() => onServiceSelect(service.name)}
+                onClick={() => onServiceSelect(service.id, service.name)}
               >
                 <div className="relative aspect-square overflow-hidden rounded-t-lg">
                   <img
@@ -132,7 +132,7 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     onError={(e) => { e.currentTarget.src = getServiceImage('', service.name); }}
                   />
-                  {selectedService === service.name && (
+                  {selectedService?.id === service.id && (
                     <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1.5">
                       <Check className="w-4 h-4" />
                     </div>
