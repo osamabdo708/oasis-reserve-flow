@@ -220,23 +220,28 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
 
     try {
       // Save booking to database
-      const { error } = await supabase
-        .from('bookings')
-        .insert({
-          service: selectedService,
-          booking_date: date.toISOString().split('T')[0],
-          booking_time: selectedTime,
-          customer_name: name,
-          phone_number: `${countryCode}${phone}`,
-          notes: notes || null,
-          status: 'pending'
-        });
+// Prepare phone number for saving
+let phoneDigits = phone.replace(/\D/g, '');
+phoneDigits = phoneDigits.replace(/^0+/, ''); // remove leading zeros from the number part
+const fullPhoneNumber = `${countryCode}${phoneDigits}`;
+
+const { error } = await supabase
+  .from('bookings')
+  .insert({
+    service: selectedService,
+    booking_date: date.toISOString().split('T')[0],
+    booking_time: selectedTime,
+    customer_name: name,
+    phone_number: fullPhoneNumber, // <-- use fullPhoneNumber
+    notes: notes || null,
+    status: 'pending'
+  });
 
       if (error) throw error;
 
       toast({
         title: "تم تأكيد الحجز بنجاح! ✅",
-        description: `سيتم التواصل معك قريباً على الرقم ${countryCode}${phone}`,
+        description: `سيتم التواصل معك قريباً على الرقم ${phone}`,
       });
 
       // Reset form (keep service selected)
@@ -357,8 +362,8 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="+970">🇵🇸 +970</SelectItem>
-              <SelectItem value="+972">🇮🇱 +972</SelectItem>
+              <SelectItem value="+970">+970</SelectItem>
+              <SelectItem value="+972">+972</SelectItem>
               {/* <SelectItem value="+966">🇸🇦 +966</SelectItem>
               <SelectItem value="+971">🇦🇪 +971</SelectItem>
               <SelectItem value="+973">🇧🇭 +973</SelectItem>

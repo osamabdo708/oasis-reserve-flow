@@ -95,7 +95,7 @@ const HomeMobile = () => {
         
         <div className="relative z-10 text-center px-4">
           <h2 className="text-3xl font-bold mb-4 text-white drop-shadow-lg">
-            منتجع السكينة الصحي
+            Riea Clinic
           </h2>
           <p className="text-base mb-6 text-white/95 leading-relaxed drop-shadow px-4">
             رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
@@ -190,7 +190,7 @@ const HomeMobile = () => {
       {/* Footer */}
       <footer className="bg-secondary/50 py-8">
         <div className="container px-4 text-center">
-          <h3 className="text-lg font-bold mb-2 text-foreground">منتجع السكينة الصحي</h3>
+          <h3 className="text-lg font-bold mb-2 text-foreground">Riea Clinic</h3>
           <p className="text-xs text-muted-foreground mb-4">
             وجهتك المثالية للاسترخاء والعناية بالنفس
           </p>

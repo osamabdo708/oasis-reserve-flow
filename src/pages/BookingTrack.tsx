@@ -172,7 +172,7 @@ const BookingTrack = () => {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="567900601"
+                  placeholder="5xxxxxxxx"
                   className="h-12 flex-1"
                   dir="ltr"
                 />

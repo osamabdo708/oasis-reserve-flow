@@ -59,20 +59,20 @@ serve(async (req) => {
     const messageText = `مرحباً ${booking.customer_name}! ✅\n\nتم تأكيد حجزك بنجاح:\n\nالخدمة: ${booking.service}\nالتاريخ: ${booking.booking_date}\nالوقت: ${booking.booking_time}\n\nنتطلع لرؤيتك! 🌟`;
     
     // Format phone number to ensure it has + prefix
-    const phoneNumber = booking.phone_number.startsWith('+') 
-      ? booking.phone_number 
-      : `+${booking.phone_number}`;
+    // The phone number from the database is stored as a string of digits (e.g., 970599123456).
+    // We need to ensure it has the '+' prefix for the WhatsApp API.
+    const rawPhoneNumber = booking.phone_number.replace(/\D/g, '');
+    const whatsappPhoneNumber = `+${rawPhoneNumber}`;
     
-    console.log('Sending WhatsApp to:', phoneNumber);
+    console.log('Sending WhatsApp to:', whatsappPhoneNumber);
     
     const whatsappResponse = await fetch('https://wp.palmart.ps/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('WACHAT_TOKEN')}`,
       },
       body: JSON.stringify({
-        to: phoneNumber,
+        to: whatsappPhoneNumber,
         text: messageText,
       }),
     });
@@ -81,7 +81,7 @@ serve(async (req) => {
     
     console.log('WhatsApp confirmation sent:', whatsappResponse.status, whatsappData);
     
-    if (!whatsappResponse.ok || !whatsappData.success) {
+    if (!whatsappResponse.ok) {
       console.error('WhatsApp API error:', whatsappData);
       // Don't fail the approval if WhatsApp fails, just log it
       console.warn('Booking approved but WhatsApp notification failed');
@@ -91,7 +91,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'تم تأكيد الحجز وإرسال رسالة التأكيد',
-        messageId: whatsappData.messageId
+        messageId: whatsappData.messageId,
+        whatsappSuccess: whatsappData.success,
       }), 
       {
         status: 200,

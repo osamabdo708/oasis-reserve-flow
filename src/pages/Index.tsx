@@ -69,7 +69,7 @@ const Index = () => {
         
 <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
   <img
-    src="https://i.ibb.co/4nZVhgP6/Picsart-25-11-18-11-07-15-991.png"
+    src="https://i.ibb.co/XZxPCbJq/Picsart-25-11-18-11-07-15-991-removebg-preview-1.png"
     alt="Riea Clinic"
     className="mx-auto mb-6 w-60 md:w-80 drop-shadow-lg"
   />

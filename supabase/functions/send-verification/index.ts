@@ -15,27 +15,18 @@ serve(async (req) => {
   try {
     const { phoneNumber: rawPhoneNumber } = await req.json();
     
-    // Validate and normalize phone number (supports multiple countries)
-    const validatePhoneNumber = (phone: string): string => {
-      if (!phone) {
-        throw new Error('رقم الهاتف مطلوب');
-      }
-      
-      // Remove all non-digit characters including +
-      const digitsOnly = phone.replace(/\D/g, '');
-      
-      // Validate minimum length (country code + number should be at least 10 digits)
-      if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-        throw new Error('رقم الهاتف غير صحيح');
-      }
-      
-      // Return digits only (no + sign) to match verify-code function
-      return digitsOnly;
-    };
+    // The frontend sends the number as digits only (e.g., 970599123456)
+    const phoneNumber = rawPhoneNumber.replace(/\D/g, ''); // Ensure digits only for DB storage and rate limiting
+
+    // Simple validation for DB storage
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      throw new Error('رقم الهاتف غير صحيح');
+    }
+
+    // The number for WhatsApp API must have a '+' prefix
+    const whatsappPhoneNumber = `+${phoneNumber}`;
     
-    const phoneNumber = validatePhoneNumber(rawPhoneNumber);
-    
-    console.log('Sending verification code to:', phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 2));
+    console.log('Sending verification code to:', whatsappPhoneNumber.substring(0, 4) + '***' + whatsappPhoneNumber.substring(whatsappPhoneNumber.length - 2));
 
     // Generate 6-digit verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -98,7 +89,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: `+${phoneNumber}`,
+        to: whatsappPhoneNumber,
         text: messageText,
       }),
     });
