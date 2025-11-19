@@ -8,11 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users } from "lucide-react";
 import { ServicesManagement } from "@/components/ServicesManagement";
 import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
 import { ReviewsManagement } from "@/components/ReviewsManagement";
+import { ClientsManagement } from "@/components/ClientsManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -209,7 +210,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5 mb-8">
+          <TabsList className="grid w-full max-w-5xl mx-auto grid-cols-6 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -225,6 +226,10 @@ const Admin = () => {
             <TabsTrigger value="orders" className="gap-2">
               <Package className="w-4 h-4" />
               الطلبات
+            </TabsTrigger>
+            <TabsTrigger value="clients" className="gap-2">
+              <Users className="w-4 h-4" />
+              العملاء
             </TabsTrigger>
             <TabsTrigger value="reviews" className="gap-2">
               <MessageCircle className="w-4 h-4" />
@@ -350,6 +355,10 @@ const Admin = () => {
 
           <TabsContent value="orders">
             <OrdersManagement />
+          </TabsContent>
+
+          <TabsContent value="clients">
+            <ClientsManagement />
           </TabsContent>
 
           <TabsContent value="reviews">
