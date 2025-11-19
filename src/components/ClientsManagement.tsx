@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Trash2, Plus, X, FileText } from "lucide-react";
+import { UserPlus, Trash2, Plus, X, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import userIcon from "@/assets/user-icon.png";
 
 interface Client {
@@ -46,6 +47,7 @@ export const ClientsManagement = () => {
     address: "",
   });
   const [newProgress, setNewProgress] = useState("");
+  const [openBookingSections, setOpenBookingSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchClients();
@@ -127,8 +129,14 @@ export const ClientsManagement = () => {
   const handleAddProgress = async () => {
     if (!newProgress.trim() || !selectedClient) return;
 
+    const currentProgress = Array.isArray(selectedClient.progress) 
+      ? selectedClient.progress 
+      : selectedClient.progress 
+        ? [selectedClient.progress]
+        : [];
+
     const updatedProgress = [
-      ...(selectedClient.progress || []),
+      ...currentProgress,
       {
         note: newProgress,
         timestamp: new Date().toISOString(),
@@ -379,17 +387,17 @@ export const ClientsManagement = () => {
                               </DialogHeader>
                               <div className="space-y-4">
                                 <div className="max-h-96 overflow-y-auto space-y-2">
-                                  {(client.progress || []).map((note: any, idx: number) => (
+                                  {(Array.isArray(client.progress) ? client.progress : []).map((note: any, idx: number) => (
                                     <Card key={idx}>
                                       <CardContent className="pt-4">
-                                        <p className="text-sm">{note.note}</p>
+                                        <p className="text-sm whitespace-pre-wrap">{note.note}</p>
                                         <p className="text-xs text-muted-foreground mt-2">
                                           {new Date(note.timestamp).toLocaleString('ar-EG')}
                                         </p>
                                       </CardContent>
                                     </Card>
                                   ))}
-                                  {(!client.progress || client.progress.length === 0) && (
+                                  {(!client.progress || (Array.isArray(client.progress) && client.progress.length === 0)) && (
                                     <p className="text-sm text-muted-foreground text-center py-4">
                                       لا توجد ملاحظات بعد
                                     </p>
@@ -459,41 +467,63 @@ export const ClientsManagement = () => {
                       )}
                     </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-2">الحجوزات المتاحة</h4>
-                      {getAvailableBookings().length > 0 ? (
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {getAvailableBookings().map((booking) => (
-                            <div
-                              key={booking.id}
-                              className="flex justify-between items-center p-3 bg-muted rounded-lg"
-                            >
-                              <div>
-                                <p className="font-medium">{booking.service}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {booking.customer_name} - {booking.booking_date} في{" "}
-                                  {booking.booking_time}
-                                </p>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleAssignBooking(booking.id, client.id)
-                                }
+                    <Collapsible
+                      open={openBookingSections[client.id]}
+                      onOpenChange={(open) =>
+                        setOpenBookingSections({ ...openBookingSections, [client.id]: open })
+                      }
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold">الحجوزات المتاحة</h4>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            {openBookingSections[client.id] ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                            <span className="ml-2">
+                              {getAvailableBookings().length} حجز متاح
+                            </span>
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      
+                      <CollapsibleContent className="mt-2">
+                        {getAvailableBookings().length > 0 ? (
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {getAvailableBookings().map((booking) => (
+                              <div
+                                key={booking.id}
+                                className="flex justify-between items-center p-3 bg-muted rounded-lg"
                               >
-                                <Plus className="h-4 w-4 ml-2" />
-                                تعيين
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          لا توجد حجوزات متاحة
-                        </p>
-                      )}
-                    </div>
+                                <div>
+                                  <p className="font-medium">{booking.service}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {booking.customer_name} - {booking.booking_date} في{" "}
+                                    {booking.booking_time}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleAssignBooking(booking.id, client.id)
+                                  }
+                                >
+                                  <Plus className="h-4 w-4 ml-2" />
+                                  تعيين
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            لا توجد حجوزات متاحة
+                          </p>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 </CardContent>
               </Card>
