@@ -349,7 +349,12 @@ const { error } = await supabase
 
       <div className="space-y-2">
         <Label className="text-base">المدة *</Label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className={cn(
+          "grid gap-3",
+          durationOptions.length === 1 ? "grid-cols-1" : 
+          durationOptions.length === 2 ? "grid-cols-2" : 
+          "grid-cols-3"
+        )}>
           {durationOptions.map((option) => (
             <button
               key={option.value}
