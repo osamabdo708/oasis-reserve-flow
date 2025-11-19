@@ -3,19 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Trash2, Plus, X } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserPlus, Trash2, Plus, X, FileText } from "lucide-react";
+import userIcon from "@/assets/user-icon.png";
 
 interface Client {
   id: string;
   name: string;
   age: number | null;
   phone_number: string;
+  gender: string | null;
+  address: string | null;
+  progress: any;
   created_at: string;
 }
 
@@ -39,7 +42,10 @@ export const ClientsManagement = () => {
     name: "",
     age: "",
     phone_number: "",
+    gender: "",
+    address: "",
   });
+  const [newProgress, setNewProgress] = useState("");
 
   useEffect(() => {
     fetchClients();
@@ -91,6 +97,8 @@ export const ClientsManagement = () => {
             name: newClient.name,
             age: newClient.age ? parseInt(newClient.age) : null,
             phone_number: newClient.phone_number,
+            gender: newClient.gender || null,
+            address: newClient.address || null,
           },
         ]);
 
@@ -101,7 +109,7 @@ export const ClientsManagement = () => {
         description: "تم إضافة العميل بنجاح",
       });
 
-      setNewClient({ name: "", age: "", phone_number: "" });
+      setNewClient({ name: "", age: "", phone_number: "", gender: "", address: "" });
       setIsDialogOpen(false);
       fetchClients();
     } catch (error: any) {
@@ -114,6 +122,40 @@ export const ClientsManagement = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddProgress = async () => {
+    if (!newProgress.trim() || !selectedClient) return;
+
+    const updatedProgress = [
+      ...(selectedClient.progress || []),
+      {
+        note: newProgress,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+
+    const { error } = await supabase
+      .from("clients")
+      .update({ progress: updatedProgress })
+      .eq("id", selectedClient.id);
+
+    if (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل في إضافة ملاحظة التقدم",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "تم الإضافة",
+      description: "تم إضافة ملاحظة التقدم بنجاح",
+    });
+    
+    setNewProgress("");
+    fetchClients();
   };
 
   const handleDeleteClient = async (clientId: string) => {
@@ -148,25 +190,29 @@ export const ClientsManagement = () => {
         .update({ client_id: clientId })
         .eq("id", bookingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error assigning booking:", error);
+        throw error;
+      }
 
       toast({
-        title: "تم الربط",
-        description: "تم ربط الحجز بالعميل بنجاح",
+        title: "تم التعيين",
+        description: "تم تعيين الحجز للعميل بنجاح",
       });
 
       fetchBookings();
+      fetchClients();
     } catch (error: any) {
       console.error("Error assigning booking:", error);
       toast({
         title: "خطأ",
-        description: error.message || "فشل في ربط الحجز",
+        description: error.message || "فشل في تعيين الحجز",
         variant: "destructive",
       });
     }
   };
 
-  const handleRemoveBooking = async (bookingId: string) => {
+  const handleUnassignBooking = async (bookingId: string) => {
     try {
       const { error } = await supabase
         .from("bookings")
@@ -177,223 +223,289 @@ export const ClientsManagement = () => {
 
       toast({
         title: "تم الإلغاء",
-        description: "تم إلغاء ربط الحجز بالعميل",
+        description: "تم إلغاء تعيين الحجز",
       });
 
       fetchBookings();
+      fetchClients();
     } catch (error: any) {
-      console.error("Error removing booking:", error);
+      console.error("Error unassigning booking:", error);
       toast({
         title: "خطأ",
-        description: error.message || "فشل في إلغاء ربط الحجز",
+        description: error.message || "فشل في إلغاء تعيين الحجز",
         variant: "destructive",
       });
     }
   };
 
   const getClientBookings = (clientId: string) => {
-    return bookings.filter((b) => b.client_id === clientId);
+    return bookings.filter((booking) => booking.client_id === clientId);
   };
 
   const getAvailableBookings = () => {
-    return bookings.filter((b) => !b.client_id);
-  };
-
-  const getServiceName = (serviceId: string) => {
-    const services: Record<string, string> = {
-      massage: "مساج استرخائي",
-      skincare: "عناية بالبشرة",
-      hammam: "حمام مغربي",
-      facial: "تنظيف البشرة",
-    };
-    return services[serviceId] || serviceId;
+    return bookings.filter((booking) => !booking.client_id);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>إدارة العملاء</CardTitle>
-            <CardDescription>
-              إجمالي العملاء: {clients.length}
-            </CardDescription>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <UserPlus className="w-4 h-4" />
-                إضافة عميل جديد
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>إضافة عميل جديد</DialogTitle>
-                <DialogDescription>
-                  أدخل معلومات العميل
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleAddClient} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">الاسم</Label>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold">إدارة العملاء</h2>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="ml-2 h-4 w-4" />
+              إضافة عميل جديد
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>إضافة عميل جديد</DialogTitle>
+              <DialogDescription>
+                أدخل تفاصيل العميل الجديد
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddClient}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">الاسم *</Label>
                   <Input
                     id="name"
                     value={newClient.name}
-                    onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewClient({ ...newClient, name: e.target.value })
+                    }
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="grid gap-2">
                   <Label htmlFor="age">العمر</Label>
                   <Input
                     id="age"
                     type="number"
                     value={newClient.age}
-                    onChange={(e) => setNewClient({ ...newClient, age: e.target.value })}
+                    onChange={(e) =>
+                      setNewClient({ ...newClient, age: e.target.value })
+                    }
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">رقم الهاتف</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">رقم الهاتف *</Label>
                   <Input
                     id="phone"
-                    type="tel"
                     value={newClient.phone_number}
-                    onChange={(e) => setNewClient({ ...newClient, phone_number: e.target.value })}
+                    onChange={(e) =>
+                      setNewClient({
+                        ...newClient,
+                        phone_number: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "جاري الإضافة..." : "إضافة"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-8">
-          {clients.map((client) => {
-            const clientBookings = getClientBookings(client.id);
-            return (
-              <Card key={client.id} className="border-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="gender">الجنس</Label>
+                  <Input
+                    id="gender"
+                    value={newClient.gender}
+                    onChange={(e) =>
+                      setNewClient({ ...newClient, gender: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address">العنوان</Label>
+                  <Input
+                    id="address"
+                    value={newClient.address}
+                    onChange={(e) =>
+                      setNewClient({ ...newClient, address: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "جاري الإضافة..." : "إضافة"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>قائمة العملاء</CardTitle>
+          <CardDescription>
+            إدارة العملاء وربطهم بالحجوزات
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {clients.map((client) => (
+              <Card key={client.id}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{client.name}</CardTitle>
-                      <CardDescription>
-                        {client.age && `العمر: ${client.age} • `}
-                        الهاتف: {client.phone_number}
-                      </CardDescription>
+                  <div className="flex gap-4 items-start">
+                    <img 
+                      src={userIcon} 
+                      alt="User" 
+                      className="w-16 h-16 rounded-full object-cover" 
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="mb-2">{client.name}</CardTitle>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p>العمر: {client.age || "غير محدد"} | الجنس: {client.gender || "غير محدد"}</p>
+                            <p>الهاتف: {client.phone_number}</p>
+                            <p>العنوان: {client.address || "غير محدد"}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedClient(client)}
+                              >
+                                <FileText className="h-4 w-4 ml-2" />
+                                ملاحظات التقدم
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>ملاحظات التقدم - {client.name}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="max-h-96 overflow-y-auto space-y-2">
+                                  {(client.progress || []).map((note: any, idx: number) => (
+                                    <Card key={idx}>
+                                      <CardContent className="pt-4">
+                                        <p className="text-sm">{note.note}</p>
+                                        <p className="text-xs text-muted-foreground mt-2">
+                                          {new Date(note.timestamp).toLocaleString('ar-EG')}
+                                        </p>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                  {(!client.progress || client.progress.length === 0) && (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                      لا توجد ملاحظات بعد
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Textarea
+                                    placeholder="إضافة ملاحظة تقدم..."
+                                    value={newProgress}
+                                    onChange={(e) => setNewProgress(e.target.value)}
+                                  />
+                                  <Button onClick={handleAddProgress}>
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteClient(client.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteClient(client.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">الحجوزات ({clientBookings.length})</h4>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="gap-2">
-                            <Plus className="w-4 h-4" />
-                            إضافة حجز
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>إضافة حجز للعميل</DialogTitle>
-                            <DialogDescription>
-                              اختر حجز من الحجوزات المتاحة
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-2">
-                            {getAvailableBookings().length === 0 ? (
-                              <p className="text-center text-muted-foreground py-4">
-                                لا توجد حجوزات متاحة
-                              </p>
-                            ) : (
-                              <div className="space-y-2 max-h-96 overflow-y-auto">
-                                {getAvailableBookings().map((booking) => (
-                                  <div
-                                    key={booking.id}
-                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                                  >
-                                    <div className="text-sm">
-                                      <div className="font-medium">{getServiceName(booking.service)}</div>
-                                      <div className="text-muted-foreground">
-                                        {new Date(booking.booking_date).toLocaleDateString('ar-SA')} - {booking.booking_time}
-                                      </div>
-                                      <div className="text-muted-foreground">
-                                        {booking.customer_name}
-                                      </div>
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleAssignBooking(booking.id, client.id)}
-                                    >
-                                      إضافة
-                                    </Button>
-                                  </div>
-                                ))}
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">حجوزات العميل</h4>
+                      {getClientBookings(client.id).length > 0 ? (
+                        <div className="space-y-2">
+                          {getClientBookings(client.id).map((booking) => (
+                            <div
+                              key={booking.id}
+                              className="flex justify-between items-center p-3 bg-muted rounded-lg"
+                            >
+                              <div>
+                                <p className="font-medium">{booking.service}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {booking.customer_name} - {booking.booking_date} في{" "}
+                                  {booking.booking_time}
+                                </p>
+                                <Badge variant="outline" className="mt-1">
+                                  {booking.status}
+                                </Badge>
                               </div>
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                    {clientBookings.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-4 border rounded-lg">
-                        لا توجد حجوزات لهذا العميل
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {clientBookings.map((booking) => (
-                          <div
-                            key={booking.id}
-                            className="flex items-center justify-between p-3 border rounded-lg"
-                          >
-                            <div className="flex-1 text-sm">
-                              <div className="font-medium">{getServiceName(booking.service)}</div>
-                              <div className="text-muted-foreground">
-                                {new Date(booking.booking_date).toLocaleDateString('ar-SA')} - {booking.booking_time}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={booking.status === 'approved' ? 'default' : 'outline'}>
-                                {booking.status === 'pending' ? 'قيد الانتظار' : booking.status === 'approved' ? 'مؤكد' : 'ملغي'}
-                              </Badge>
                               <Button
+                                variant="outline"
                                 size="sm"
-                                variant="ghost"
-                                onClick={() => handleRemoveBooking(booking.id)}
+                                onClick={() => handleUnassignBooking(booking.id)}
                               >
-                                <X className="w-4 h-4" />
+                                <X className="h-4 w-4 ml-2" />
+                                إزالة
                               </Button>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          لا توجد حجوزات معينة
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-2">الحجوزات المتاحة</h4>
+                      {getAvailableBookings().length > 0 ? (
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {getAvailableBookings().map((booking) => (
+                            <div
+                              key={booking.id}
+                              className="flex justify-between items-center p-3 bg-muted rounded-lg"
+                            >
+                              <div>
+                                <p className="font-medium">{booking.service}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {booking.customer_name} - {booking.booking_date} في{" "}
+                                  {booking.booking_time}
+                                </p>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleAssignBooking(booking.id, client.id)
+                                }
+                              >
+                                <Plus className="h-4 w-4 ml-2" />
+                                تعيين
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          لا توجد حجوزات متاحة
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
-          {clients.length === 0 && (
-            <p className="text-center py-8 text-muted-foreground">
-              لا توجد عملاء. ابدأ بإضافة عميل جديد.
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+            {clients.length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                لا يوجد عملاء بعد. قم بإضافة عميل جديد للبدء.
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
