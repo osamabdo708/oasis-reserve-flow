@@ -33,6 +33,7 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [date, setDate] = useState<Date>();
   const [selectedService] = useState(preSelectedService || "");
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState("1 hr");
   const [name, setName] = useState("");
   const [countryCode, setCountryCode] = useState("+970");
   const [phone, setPhone] = useState("");
@@ -48,6 +49,14 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   // Bookings state
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
+  const durationOptions = [
+    { value: "30 mins", label: "30 دقيقة", price: 100 },
+    { value: "1 hr", label: "ساعة", price: 150 },
+    { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+  ];
+
+  const selectedDurationPrice = durationOptions.find(d => d.value === selectedDuration)?.price || 150;
 
   const timeSlots = [
     "09:00 ص", "10:00 ص", "11:00 ص", "12:00 م",
@@ -231,8 +240,10 @@ const { error } = await supabase
     service: selectedService,
     booking_date: date.toISOString().split('T')[0],
     booking_time: selectedTime,
+    booking_duration: selectedDuration,
+    price: selectedDurationPrice,
     customer_name: name,
-    phone_number: fullPhoneNumber, // <-- use fullPhoneNumber
+    phone_number: fullPhoneNumber,
     notes: notes || null,
     status: 'pending'
   });
@@ -247,6 +258,7 @@ const { error } = await supabase
       // Reset form (keep service selected)
       setDate(undefined);
       setSelectedTime("");
+      setSelectedDuration("1 hr");
       setName("");
       setPhone("");
       setCountryCode("+970");
@@ -272,6 +284,28 @@ const { error } = await supabase
           <p className="text-lg font-bold text-primary">{preSelectedServiceName}</p>
         </div>
       )}
+
+      <div className="space-y-2">
+        <Label className="text-base">المدة *</Label>
+        <div className="grid grid-cols-3 gap-3">
+          {durationOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setSelectedDuration(option.value)}
+              className={cn(
+                "h-16 rounded-lg border-2 transition-all font-medium flex flex-col items-center justify-center gap-1",
+                selectedDuration === option.value 
+                  ? "border-primary bg-primary text-primary-foreground" 
+                  : "border-border hover:border-primary hover:bg-primary/10"
+              )}
+            >
+              <span className="text-sm">{option.label}</span>
+              <span className="text-xs font-bold">{option.price} ₪</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label className="text-base">التاريخ *</Label>
@@ -454,8 +488,18 @@ const { error } = await supabase
         />
       </div>
 
-      <div className="bg-secondary/50 p-4 rounded-lg">
-        <p className="text-sm text-muted-foreground">
+      <div className="bg-secondary/50 p-4 rounded-lg space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">المدة المختارة:</span>
+          <span className="font-bold text-foreground">
+            {durationOptions.find(d => d.value === selectedDuration)?.label}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">السعر:</span>
+          <span className="font-bold text-primary text-lg">{selectedDurationPrice} ₪</span>
+        </div>
+        <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
           💳 <strong>الدفع:</strong> الدفع عند الوصول للمنتجع
         </p>
       </div>
