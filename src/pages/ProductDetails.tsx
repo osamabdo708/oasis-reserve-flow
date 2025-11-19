@@ -156,7 +156,10 @@ const ProductDetails = () => {
             </div>
             <Button
               variant="outline"
-              onClick={() => navigate('/shop')}
+              onClick={() => {
+                // Navigate to shop with cart open state
+                navigate('/shop', { state: { openCart: true } });
+              }}
               className="relative"
             >
               <ShoppingCart className="ml-2" />

@@ -14,6 +14,7 @@ import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
 import { ReviewsManagement } from "@/components/ReviewsManagement";
 import { ClientsManagement } from "@/components/ClientsManagement";
+import { ShippingMethodsManagement } from "@/components/ShippingMethodsManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -393,6 +394,10 @@ const Admin = () => {
 
           <TabsContent value="clients">
             <ClientsManagement />
+          </TabsContent>
+
+          <TabsContent value="shipping">
+            <ShippingMethodsManagement />
           </TabsContent>
 
           <TabsContent value="reviews">

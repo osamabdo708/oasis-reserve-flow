@@ -147,39 +147,56 @@ export type Database = {
       }
       orders: {
         Row: {
+          address: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
           customer_phone: string
           id: string
           notes: string | null
+          shipping_fee: number | null
+          shipping_method_id: string | null
           status: string
           total_amount: number
           updated_at: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
           customer_phone: string
           id?: string
           notes?: string | null
+          shipping_fee?: number | null
+          shipping_method_id?: string | null
           status?: string
           total_amount: number
           updated_at?: string
         }
         Update: {
+          address?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
           id?: string
           notes?: string | null
+          shipping_fee?: number | null
+          shipping_method_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_method_id_fkey"
+            columns: ["shipping_method_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_methods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -296,6 +313,33 @@ export type Database = {
           image_url?: string
           is_active?: boolean
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_methods: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
           updated_at?: string
         }
         Relationships: []
