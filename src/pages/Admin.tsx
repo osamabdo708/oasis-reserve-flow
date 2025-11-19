@@ -37,6 +37,13 @@ interface Booking {
   phone_number: string;
   notes: string | null;
   status: string;
+  price: number;
+  booking_duration: string;
+}
+
+interface Service {
+  id: string;
+  name: string;
 }
 
 const Admin = () => {
@@ -46,15 +53,33 @@ const Admin = () => {
   const [password, setPassword] = useState("");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
     // Check if already authenticated
     const adminAuth = sessionStorage.getItem("adminAuth");
     if (adminAuth === "true") {
       setIsAuthenticated(true);
+      fetchServices();
       fetchBookings();
     }
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, name');
+      
+      if (error) throw error;
+      
+      if (data) {
+        setServices(data);
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +87,7 @@ const Admin = () => {
     if (username === "admin" && password === "admin") {
       sessionStorage.setItem("adminAuth", "true");
       setIsAuthenticated(true);
+      fetchServices();
       fetchBookings();
       toast({
         title: "تم تسجيل الدخول",
@@ -107,13 +133,17 @@ const Admin = () => {
   };
 
   const getServiceName = (serviceId: string) => {
-    const services: Record<string, string> = {
-      massage: "مساج استرخائي",
-      skincare: "عناية بالبشرة",
-      hammam: "حمام مغربي",
-      facial: "تنظيف البشرة",
-    };
-    return services[serviceId] || serviceId;
+    const service = services.find(s => s.id === serviceId);
+    return service ? service.name : serviceId;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -266,6 +296,8 @@ const Admin = () => {
                           <TableHead className="text-right">الخدمة</TableHead>
                           <TableHead className="text-right">موعد الحجز</TableHead>
                           <TableHead className="text-right">الوقت</TableHead>
+                          <TableHead className="text-right">المدة</TableHead>
+                          <TableHead className="text-right">السعر</TableHead>
                           <TableHead className="text-right">اسم العميل</TableHead>
                           <TableHead className="text-right">رقم الهاتف</TableHead>
                           <TableHead className="text-right">ملاحظات</TableHead>
@@ -277,15 +309,17 @@ const Admin = () => {
                         {bookings.map((booking) => (
                           <TableRow key={booking.id}>
                             <TableCell className="text-right">
-                              {new Date(booking.created_at).toLocaleDateString('ar-SA')}
+                              {formatDate(booking.created_at)}
                             </TableCell>
                             <TableCell className="text-right">
                               {getServiceName(booking.service)}
                             </TableCell>
                             <TableCell className="text-right">
-                              {new Date(booking.booking_date).toLocaleDateString('ar-SA')}
+                              {formatDate(booking.booking_date)}
                             </TableCell>
                             <TableCell className="text-right">{booking.booking_time}</TableCell>
+                            <TableCell className="text-right">{booking.booking_duration}</TableCell>
+                            <TableCell className="text-right">{booking.price} ₪</TableCell>
                             <TableCell className="text-right">{booking.customer_name}</TableCell>
 <TableCell className="text-right">
   <a
