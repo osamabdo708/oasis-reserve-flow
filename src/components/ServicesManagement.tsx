@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Upload, X } from "lucide-react";
 import massageImg from "@/assets/massage.jpg";
 import hammamImg from "@/assets/hammam.jpg";
 import skincareImg from "@/assets/skincare.jpg";
@@ -433,10 +433,29 @@ export const ServicesManagement = () => {
                     />
                   </div>
                   
-                  <div className="grid gap-3 mt-4">
-                    <Label className="text-base font-semibold">خيارات المدة والأسعار</Label>
+                  <div className="grid gap-3 mt-4 border-t pt-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-base font-semibold">خيارات المدة والأسعار</Label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            duration_options: [
+                              ...formData.duration_options,
+                              { value: "", label: "", price: 0 }
+                            ]
+                          });
+                        }}
+                      >
+                        <Plus className="w-4 h-4 ml-1" />
+                        إضافة خيار
+                      </Button>
+                    </div>
                     {formData.duration_options.map((option, index) => (
-                      <div key={index} className="grid grid-cols-3 gap-2 p-3 border rounded-lg bg-muted/30">
+                      <div key={index} className="grid grid-cols-[1fr,1fr,1fr,auto] gap-2 p-3 border rounded-lg bg-muted/30">
                         <div className="grid gap-1">
                           <Label className="text-xs">المدة</Label>
                           <Input
@@ -476,6 +495,29 @@ export const ServicesManagement = () => {
                             placeholder="100"
                             className="h-9"
                           />
+                        </div>
+                        <div className="flex items-end">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              if (formData.duration_options.length > 1) {
+                                const newOptions = formData.duration_options.filter((_, i) => i !== index);
+                                setFormData({ ...formData, duration_options: newOptions });
+                              } else {
+                                toast({
+                                  title: "تحذير",
+                                  description: "يجب أن يكون هناك خيار واحد على الأقل",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            className="h-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            disabled={formData.duration_options.length === 1}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
