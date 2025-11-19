@@ -274,18 +274,18 @@ export const ServicesManagement = () => {
     }
   };
 
-  const toggleActive = async (service: Service) => {
+  const toggleActive = async (serviceId: string, currentState: boolean) => {
     try {
       const { error } = await supabase
         .from("services")
-        .update({ is_active: !service.is_active })
-        .eq("id", service.id);
+        .update({ is_active: !currentState })
+        .eq("id", serviceId);
 
       if (error) throw error;
       
       toast({
         title: "تم التحديث",
-        description: service.is_active ? "تم إخفاء الخدمة" : "تم تفعيل الخدمة",
+        description: currentState ? "تم إخفاء الخدمة" : "تم تفعيل الخدمة",
       });
       
       fetchServices();
@@ -337,105 +337,146 @@ export const ServicesManagement = () => {
                 إضافة خدمة
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleSubmit}>
-                <DialogHeader>
-                  <DialogTitle>
+                <DialogHeader className="pb-4">
+                  <DialogTitle className="text-2xl">
                     {editingService ? "تعديل الخدمة" : "إضافة خدمة جديدة"}
                   </DialogTitle>
                   <DialogDescription>
-                    أدخل تفاصيل الخدمة
+                    قم بملء جميع الحقول المطلوبة (*) لإضافة أو تعديل الخدمة
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">اسم الخدمة *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">الوصف</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="image_url">صورة الخدمة *</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                        placeholder="رابط الصورة أو قم بالرفع"
-                        required
-                      />
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept="image/*"
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="gap-2"
-                      >
-                        <Upload className="w-4 h-4" />
-                        {isUploading ? "جاري الرفع..." : "رفع"}
-                      </Button>
-                    </div>
-                    {formData.image_url && (
-                      <img
-                        src={formData.image_url.startsWith('http') ? formData.image_url : getServiceImage(formData.image_url, formData.name)}
-                        alt="معاينة"
-                        className="w-full h-32 object-cover rounded-md mt-2"
-                      />
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="price">السعر *</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="currency">العملة</Label>
-                      <Input
-                        id="currency"
-                        value={formData.currency}
-                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                      />
+                
+                <div className="grid gap-6 py-6">
+                  {/* Basic Info Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">المعلومات الأساسية</h3>
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name" className="text-sm font-medium">اسم الخدمة *</Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="أدخل اسم الخدمة"
+                          required
+                          className="h-11"
+                        />
+                      </div>
+                      
+                      <div className="grid gap-2">
+                        <Label htmlFor="description" className="text-sm font-medium">الوصف</Label>
+                        <Textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          placeholder="وصف تفصيلي للخدمة"
+                          rows={3}
+                          className="resize-none"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="display_order">ترتيب العرض</Label>
-                    <Input
-                      id="display_order"
-                      type="number"
-                      value={formData.display_order}
-                      onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
-                    />
+
+                  {/* Image Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">صورة الخدمة</h3>
+                    <div className="grid gap-3">
+                      <div className="flex gap-2">
+                        <div className="flex-1 grid gap-2">
+                          <Label htmlFor="image_url" className="text-sm font-medium">رابط الصورة *</Label>
+                          <Input
+                            id="image_url"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                            placeholder="https://example.com/image.jpg أو قم برفع صورة"
+                            required
+                            className="h-11"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label className="text-sm font-medium opacity-0">رفع</Label>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="gap-2 h-11 min-w-[120px]"
+                          >
+                            <Upload className="w-4 h-4" />
+                            {isUploading ? "جاري الرفع..." : "رفع صورة"}
+                          </Button>
+                        </div>
+                      </div>
+                      {formData.image_url && (
+                        <div className="relative rounded-lg overflow-hidden border-2 border-border bg-muted">
+                          <img
+                            src={formData.image_url.startsWith('http') ? formData.image_url : getServiceImage(formData.image_url, formData.name)}
+                            alt="معاينة الصورة"
+                            className="w-full h-48 object-cover"
+                          />
+                          <Badge className="absolute top-2 right-2 bg-background/90">معاينة</Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Pricing Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">التسعير والترتيب</h3>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="price" className="text-sm font-medium">السعر الأساسي *</Label>
+                        <div className="relative">
+                          <Input
+                            id="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                            placeholder="0.00"
+                            required
+                            className="h-11"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="currency" className="text-sm font-medium">العملة</Label>
+                        <Input
+                          id="currency"
+                          value={formData.currency}
+                          onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                          className="h-11"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="display_order" className="text-sm font-medium">ترتيب العرض</Label>
+                        <Input
+                          id="display_order"
+                          type="number"
+                          min="0"
+                          value={formData.display_order}
+                          onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
+                          placeholder="1"
+                          className="h-11"
+                        />
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="grid gap-3 mt-4 border-t pt-4">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-base font-semibold">خيارات المدة والأسعار</Label>
+                  {/* Duration Options Section */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center border-b pb-2">
+                      <h3 className="text-lg font-semibold">خيارات المدة والأسعار</h3>
                       <Button
                         type="button"
                         size="sm"
@@ -449,83 +490,110 @@ export const ServicesManagement = () => {
                             ]
                           });
                         }}
+                        className="gap-2"
                       >
-                        <Plus className="w-4 h-4 ml-1" />
-                        إضافة خيار
+                        <Plus className="w-4 h-4" />
+                        إضافة خيار جديد
                       </Button>
                     </div>
-                    {formData.duration_options.map((option, index) => (
-                      <div key={index} className="grid grid-cols-[1fr,1fr,1fr,auto] gap-2 p-3 border rounded-lg bg-muted/30">
-                        <div className="grid gap-1">
-                          <Label className="text-xs">المدة</Label>
-                          <Input
-                            value={option.value}
-                            onChange={(e) => {
-                              const newOptions = [...formData.duration_options];
-                              newOptions[index].value = e.target.value;
-                              setFormData({ ...formData, duration_options: newOptions });
-                            }}
-                            placeholder="مثال: 30 mins"
-                            className="h-9"
-                          />
-                        </div>
-                        <div className="grid gap-1">
-                          <Label className="text-xs">التسمية</Label>
-                          <Input
-                            value={option.label}
-                            onChange={(e) => {
-                              const newOptions = [...formData.duration_options];
-                              newOptions[index].label = e.target.value;
-                              setFormData({ ...formData, duration_options: newOptions });
-                            }}
-                            placeholder="مثال: 30 دقيقة"
-                            className="h-9"
-                          />
-                        </div>
-                        <div className="grid gap-1">
-                          <Label className="text-xs">السعر (₪)</Label>
-                          <Input
-                            type="number"
-                            value={option.price}
-                            onChange={(e) => {
-                              const newOptions = [...formData.duration_options];
-                              newOptions[index].price = parseFloat(e.target.value) || 0;
-                              setFormData({ ...formData, duration_options: newOptions });
-                            }}
-                            placeholder="100"
-                            className="h-9"
-                          />
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              if (formData.duration_options.length > 1) {
-                                const newOptions = formData.duration_options.filter((_, i) => i !== index);
+                    
+                    <div className="space-y-3">
+                      {formData.duration_options.map((option, index) => (
+                        <div key={index} className="relative grid grid-cols-[1fr,1fr,120px,auto] gap-3 p-4 border-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                          <Badge variant="outline" className="absolute -top-2 right-3 bg-background text-xs">
+                            خيار {index + 1}
+                          </Badge>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs font-medium text-muted-foreground">المدة (بالإنجليزية)</Label>
+                            <Input
+                              value={option.value}
+                              onChange={(e) => {
+                                const newOptions = [...formData.duration_options];
+                                newOptions[index].value = e.target.value;
                                 setFormData({ ...formData, duration_options: newOptions });
-                              } else {
-                                toast({
-                                  title: "تحذير",
-                                  description: "يجب أن يكون هناك خيار واحد على الأقل",
-                                  variant: "destructive",
-                                });
-                              }
-                            }}
-                            className="h-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            disabled={formData.duration_options.length === 1}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                              }}
+                              placeholder="30 mins"
+                              className="h-10"
+                            />
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs font-medium text-muted-foreground">التسمية (بالعربية)</Label>
+                            <Input
+                              value={option.label}
+                              onChange={(e) => {
+                                const newOptions = [...formData.duration_options];
+                                newOptions[index].label = e.target.value;
+                                setFormData({ ...formData, duration_options: newOptions });
+                              }}
+                              placeholder="30 دقيقة"
+                              className="h-10"
+                            />
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs font-medium text-muted-foreground">السعر (₪)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={option.price}
+                              onChange={(e) => {
+                                const newOptions = [...formData.duration_options];
+                                newOptions[index].price = parseFloat(e.target.value) || 0;
+                                setFormData({ ...formData, duration_options: newOptions });
+                              }}
+                              placeholder="100"
+                              className="h-10"
+                            />
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs font-medium text-muted-foreground opacity-0">حذف</Label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                if (formData.duration_options.length > 1) {
+                                  const newOptions = formData.duration_options.filter((_, i) => i !== index);
+                                  setFormData({ ...formData, duration_options: newOptions });
+                                } else {
+                                  toast({
+                                    title: "تحذير",
+                                    description: "يجب أن يكون هناك خيار واحد على الأقل",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                              className="h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={formData.duration_options.length === 1}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                      
+                      {formData.duration_options.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                          <p className="text-sm">لا توجد خيارات مدة. انقر على "إضافة خيار جديد" لإضافة خيار.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button type="submit">
-                    {editingService ? "حفظ التعديلات" : "إضافة"}
+                
+                <DialogFooter className="gap-2 sm:gap-0 border-t pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      resetForm();
+                    }}
+                  >
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={isLoading} className="gap-2">
+                    {isLoading ? "جاري الحفظ..." : editingService ? "حفظ التعديلات" : "إضافة الخدمة"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -533,90 +601,122 @@ export const ServicesManagement = () => {
           </Dialog>
         </div>
       </CardHeader>
+      
       <CardContent>
         {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">جاري التحميل...</p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">جاري التحميل...</p>
+          </div>
         ) : services.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">لا توجد خدمات</p>
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <p className="text-muted-foreground mb-4">لا توجد خدمات حالياً</p>
+            <Button
+              onClick={() => setIsDialogOpen(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              إضافة أول خدمة
+            </Button>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="border rounded-lg overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="text-right">الصورة</TableHead>
-                  <TableHead className="text-right">الترتيب</TableHead>
-                  <TableHead className="text-right">الاسم</TableHead>
-                  <TableHead className="text-right">الوصف</TableHead>
-                  <TableHead className="text-right">السعر</TableHead>
-                  <TableHead className="text-right">الحالة</TableHead>
-                  <TableHead className="text-right">إجراءات</TableHead>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="text-right font-semibold">الصورة</TableHead>
+                  <TableHead className="text-right font-semibold">الاسم</TableHead>
+                  <TableHead className="text-right font-semibold">الوصف</TableHead>
+                  <TableHead className="text-right font-semibold">السعر</TableHead>
+                  <TableHead className="text-right font-semibold">خيارات المدة</TableHead>
+                  <TableHead className="text-center font-semibold">الحالة</TableHead>
+                  <TableHead className="text-center font-semibold">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="text-right">
+                  <TableRow key={service.id} className="hover:bg-muted/30">
+                    <TableCell>
                       <img
                         src={getServiceImage(service.image_url, service.name)}
                         alt={service.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                        onError={(e) => { e.currentTarget.src = getServiceImage('', service.name); }}
+                        className="w-16 h-16 object-cover rounded-md border"
                       />
                     </TableCell>
-                    <TableCell className="text-right">{service.display_order || "-"}</TableCell>
-                    <TableCell className="text-right font-medium">{service.name}</TableCell>
-                    <TableCell className="text-right max-w-xs truncate">
-                      {service.description || "-"}
+                    <TableCell className="font-medium">{service.name}</TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {service.description || "لا يوجد وصف"}
+                      </p>
                     </TableCell>
-                    <TableCell className="text-right">
-                      {service.price} {service.currency}
+                    <TableCell>
+                      <Badge variant="secondary" className="font-semibold">
+                        {service.price} {service.currency}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      {service.is_active ? (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          نشط
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                          مخفي
-                        </Badge>
-                      )}
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {service.duration_options?.map((opt, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {opt.label}: {opt.price} ₪
+                          </Badge>
+                        ))}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleActive(service.id, service.is_active)}
+                        className={service.is_active ? "text-green-600 hover:text-green-700" : "text-gray-400 hover:text-gray-500"}
+                      >
+                        {service.is_active ? (
+                          <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            <span className="text-xs">نشط</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <EyeOff className="w-4 h-4" />
+                            <span className="text-xs">معطل</span>
+                          </div>
+                        )}
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-1">
                         <Button
+                          variant="ghost"
                           size="sm"
-                          variant="outline"
-                          onClick={() => toggleActive(service)}
-                          className="gap-2"
-                        >
-                          {service.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
                           onClick={() => handleEdit(service)}
-                          className="gap-2"
+                          className="hover:bg-primary/10 hover:text-primary"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive" className="gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="hover:bg-destructive/10 hover:text-destructive"
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>حذف الخدمة</AlertDialogTitle>
+                              <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
                               <AlertDialogDescription>
-                                هل أنت متأكد من حذف هذه الخدمة؟ لا يمكن التراجع عن هذا الإجراء.
+                                سيتم حذف الخدمة "{service.name}" بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(service.id)}>
-                                نعم، احذف
+                              <AlertDialogAction
+                                onClick={() => handleDelete(service.id)}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                حذف
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
