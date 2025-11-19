@@ -24,12 +24,32 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get booking details
+    // Get booking details with service name
     const { data: booking, error: fetchError } = await supabase
       .from('bookings')
-      .select('*')
+      .select('*, services:service(name)')
       .eq('id', bookingId)
       .single();
+
+    if (fetchError) {
+      console.error('Error fetching booking:', fetchError);
+      throw new Error('فشل في تحميل بيانات الحجز');
+    }
+
+    if (!booking) {
+      throw new Error('الحجز غير موجود');
+    }
+
+    // Get service name
+    const serviceName = booking.services?.name || 'خدمة';
+    
+    // Format date to Gregorian
+    const bookingDate = new Date(booking.booking_date);
+    const formattedDate = bookingDate.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 
     if (fetchError) {
       console.error('Error fetching booking:', fetchError);
@@ -56,7 +76,7 @@ serve(async (req) => {
     }
 
     // Send WhatsApp confirmation message
-    const messageText = `مرحباً ${booking.customer_name}! ✅\n\nتم تأكيد حجزك بنجاح:\n\nالخدمة: ${booking.service}\nالتاريخ: ${booking.booking_date}\nالوقت: ${booking.booking_time}\n\nنتطلع لرؤيتك! 🌟`;
+    const messageText = `مرحباً ${booking.customer_name}! ✅\n\nتم تأكيد حجزك بنجاح:\n\nالخدمة: ${serviceName}\nالتاريخ: ${formattedDate}\nالوقت: ${booking.booking_time}\nالمدة: ${booking.booking_duration}\nالسعر: ${booking.price} ₪\n\nنتطلع لرؤيتك! 🌟`;
     
     // Format phone number to ensure it has + prefix
     // The phone number from the database is stored as a string of digits (e.g., 970599123456).
