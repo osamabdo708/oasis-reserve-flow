@@ -17,34 +17,40 @@ export type Database = {
       bookings: {
         Row: {
           booking_date: string
+          booking_duration: string
           booking_time: string
           created_at: string
           customer_name: string
           id: string
           notes: string | null
           phone_number: string
+          price: number
           service: string
           status: string
         }
         Insert: {
           booking_date: string
+          booking_duration?: string
           booking_time: string
           created_at?: string
           customer_name: string
           id?: string
           notes?: string | null
           phone_number: string
+          price?: number
           service: string
           status?: string
         }
         Update: {
           booking_date?: string
+          booking_duration?: string
           booking_time?: string
           created_at?: string
           customer_name?: string
           id?: string
           notes?: string | null
           phone_number?: string
+          price?: number
           service?: string
           status?: string
         }
