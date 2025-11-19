@@ -33,6 +33,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface DurationOption {
+  value: string;
+  label: string;
+  price: number;
+}
+
 interface Service {
   id: string;
   name: string;
@@ -42,6 +48,7 @@ interface Service {
   currency: string;
   is_active: boolean;
   display_order: number | null;
+  duration_options?: DurationOption[];
 }
 
 export const ServicesManagement = () => {
@@ -60,6 +67,11 @@ export const ServicesManagement = () => {
     currency: "₪",
     is_active: true,
     display_order: "",
+    duration_options: [
+      { value: "30 mins", label: "30 دقيقة", price: 100 },
+      { value: "1 hr", label: "ساعة", price: 150 },
+      { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+    ] as DurationOption[],
   });
 
   useEffect(() => {
@@ -90,7 +102,14 @@ export const ServicesManagement = () => {
         .order("display_order", { ascending: true });
 
       if (error) throw error;
-      setServices(data || []);
+      setServices((data || []).map(service => ({
+        ...service,
+        duration_options: service.duration_options as unknown as DurationOption[] || [
+          { value: "30 mins", label: "30 دقيقة", price: 100 },
+          { value: "1 hr", label: "ساعة", price: 150 },
+          { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+        ]
+      })));
     } catch (error: any) {
       console.error("Error fetching services:", error);
       toast({
@@ -170,6 +189,7 @@ export const ServicesManagement = () => {
         currency: formData.currency,
         is_active: formData.is_active,
         display_order: formData.display_order ? parseInt(formData.display_order) : null,
+        duration_options: JSON.parse(JSON.stringify(formData.duration_options)),
       };
 
       if (editingService) {
@@ -220,6 +240,11 @@ export const ServicesManagement = () => {
       currency: service.currency,
       is_active: service.is_active,
       display_order: service.display_order?.toString() || "",
+      duration_options: service.duration_options || [
+        { value: "30 mins", label: "30 دقيقة", price: 100 },
+        { value: "1 hr", label: "ساعة", price: 150 },
+        { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+      ],
     });
     setIsDialogOpen(true);
   };
@@ -283,6 +308,11 @@ export const ServicesManagement = () => {
       currency: "₪",
       is_active: true,
       display_order: "",
+      duration_options: [
+        { value: "30 mins", label: "30 دقيقة", price: 100 },
+        { value: "1 hr", label: "ساعة", price: 150 },
+        { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+      ],
     });
     setEditingService(null);
   };
@@ -401,6 +431,54 @@ export const ServicesManagement = () => {
                       value={formData.display_order}
                       onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
                     />
+                  </div>
+                  
+                  <div className="grid gap-3 mt-4">
+                    <Label className="text-base font-semibold">خيارات المدة والأسعار</Label>
+                    {formData.duration_options.map((option, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2 p-3 border rounded-lg bg-muted/30">
+                        <div className="grid gap-1">
+                          <Label className="text-xs">المدة</Label>
+                          <Input
+                            value={option.value}
+                            onChange={(e) => {
+                              const newOptions = [...formData.duration_options];
+                              newOptions[index].value = e.target.value;
+                              setFormData({ ...formData, duration_options: newOptions });
+                            }}
+                            placeholder="مثال: 30 mins"
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="grid gap-1">
+                          <Label className="text-xs">التسمية</Label>
+                          <Input
+                            value={option.label}
+                            onChange={(e) => {
+                              const newOptions = [...formData.duration_options];
+                              newOptions[index].label = e.target.value;
+                              setFormData({ ...formData, duration_options: newOptions });
+                            }}
+                            placeholder="مثال: 30 دقيقة"
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="grid gap-1">
+                          <Label className="text-xs">السعر (₪)</Label>
+                          <Input
+                            type="number"
+                            value={option.price}
+                            onChange={(e) => {
+                              const newOptions = [...formData.duration_options];
+                              newOptions[index].price = parseFloat(e.target.value) || 0;
+                              setFormData({ ...formData, duration_options: newOptions });
+                            }}
+                            placeholder="100"
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <DialogFooter>

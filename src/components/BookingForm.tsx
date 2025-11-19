@@ -29,6 +29,12 @@ interface BookingFormProps {
   preSelectedServiceName?: string;
 }
 
+interface DurationOption {
+  value: string;
+  label: string;
+  price: number;
+}
+
 export const BookingForm = ({ preSelectedService, preSelectedServiceName }: BookingFormProps) => {
   const [date, setDate] = useState<Date>();
   const [selectedService] = useState(preSelectedService || "");
@@ -38,6 +44,11 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [countryCode, setCountryCode] = useState("+970");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [durationOptions, setDurationOptions] = useState<DurationOption[]>([
+    { value: "30 mins", label: "30 دقيقة", price: 100 },
+    { value: "1 hr", label: "ساعة", price: 150 },
+    { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
+  ]);
   
   // Verification states
   const [verificationCode, setVerificationCode] = useState("");
@@ -50,11 +61,30 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
-  const durationOptions = [
-    { value: "30 mins", label: "30 دقيقة", price: 100 },
-    { value: "1 hr", label: "ساعة", price: 150 },
-    { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
-  ];
+  // Fetch service duration options
+  useEffect(() => {
+    const fetchServiceDurations = async () => {
+      if (!selectedService) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('duration_options')
+          .eq('id', selectedService)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.duration_options && Array.isArray(data.duration_options)) {
+          setDurationOptions(data.duration_options as unknown as DurationOption[]);
+        }
+      } catch (error) {
+        console.error('Error fetching service durations:', error);
+      }
+    };
+
+    fetchServiceDurations();
+  }, [selectedService]);
 
   const selectedDurationPrice = durationOptions.find(d => d.value === selectedDuration)?.price || 150;
 
