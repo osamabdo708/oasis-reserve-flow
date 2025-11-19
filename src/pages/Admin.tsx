@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users, Trash2 } from "lucide-react";
 import { ServicesManagement } from "@/components/ServicesManagement";
 import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
@@ -185,6 +185,32 @@ const Admin = () => {
     }
   };
 
+  const handleDeleteBooking = async (bookingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الحجز بنجاح",
+      });
+
+      // Refresh bookings
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error deleting booking:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في حذف الحجز",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/30">
@@ -345,30 +371,58 @@ const Admin = () => {
                               {getStatusBadge(booking.status)}
                             </TableCell>
                             <TableCell className="text-right">
-                              {booking.status === 'pending' && (
+                              <div className="flex gap-2">
+                                {booking.status === 'pending' && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button size="sm" className="gap-2">
+                                        <CheckCircle className="w-4 h-4" />
+                                        تأكيد
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>تأكيد الحجز</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          هل تريد تأكيد هذا الحجز؟ سيتم إرسال رسالة WhatsApp تلقائياً للعميل.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleApproveBooking(booking.id)}>
+                                          نعم، تأكيد الحجز
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                                
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button size="sm" className="gap-2">
-                                      <CheckCircle className="w-4 h-4" />
-                                      تأكيد
+                                    <Button size="sm" variant="destructive" className="gap-2">
+                                      <Trash2 className="w-4 h-4" />
+                                      حذف
                                     </Button>
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>تأكيد الحجز</AlertDialogTitle>
+                                      <AlertDialogTitle>حذف الحجز</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        هل تريد تأكيد هذا الحجز؟ سيتم إرسال رسالة WhatsApp تلقائياً للعميل.
+                                        هل أنت متأكد من حذف هذا الحجز؟ لا يمكن التراجع عن هذا الإجراء.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleApproveBooking(booking.id)}>
-                                        نعم، تأكيد الحجز
+                                      <AlertDialogAction 
+                                        onClick={() => handleDeleteBooking(booking.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        نعم، حذف الحجز
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
-                              )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
