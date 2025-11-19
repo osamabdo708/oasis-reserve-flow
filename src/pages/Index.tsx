@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ServiceCard";
+import { ProductCard } from "@/components/ProductCard";
 import heroImage from "@/assets/hero-spa.jpg";
 import { Calendar, Clock, MapPin, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,8 +19,17 @@ interface Service {
   currency: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  price: number;
+}
+
 const Index = () => {
   const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const getServiceImage = (imageUrl: string, serviceName: string) => {
@@ -33,6 +43,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchServices();
+    fetchProducts();
   }, []);
 
   const fetchServices = async () => {
@@ -41,7 +52,8 @@ const Index = () => {
         .from("services")
         .select("*")
         .eq("is_active", true)
-        .order("display_order", { ascending: true });
+        .order("display_order", { ascending: true })
+        .limit(3);
 
       if (error) throw error;
       setServices(data || []);
@@ -49,6 +61,22 @@ const Index = () => {
       console.error("Error fetching services:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
     }
   };
 
@@ -159,6 +187,45 @@ const Index = () => {
       {/* Latest Reviews Section */}
       <LatestReviews />
 
+      {/* Products Section */}
+      <section className="py-20 bg-gradient-to-b from-secondary/30 to-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+              منتجاتنا المميزة
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              منتجات طبيعية عالية الجودة للعناية بالبشرة والجسم
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {products.length === 0 ? (
+              <p className="col-span-full text-center text-muted-foreground">لا توجد منتجات متاحة</p>
+            ) : (
+              products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  image={product.image_url}
+                  price={product.price}
+                />
+              ))
+            )}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/shop">
+              <Button variant="default" size="lg">
+                تصفح جميع المنتجات
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-card">
         <div className="container mx-auto px-4">
@@ -200,14 +267,35 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="bg-secondary/50 py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4 text-foreground">ريا كلينيك</h3>
-          <p className="text-muted-foreground mb-6">
-            وجهتك المثالية للاسترخاء والعناية بالنفس
-          </p>
-          <p className="text-sm text-muted-foreground">
-            جميع الحقوق محفوظة © 2025
-          </p>
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <div className="text-center lg:text-right">
+              <h3 className="text-2xl font-bold mb-4 text-foreground">ريا كلينيك</h3>
+              <p className="text-muted-foreground mb-4">
+                مركز العناية والاسترخاء الأول في المنطقة
+              </p>
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-muted-foreground mb-4">
+                <MapPin className="w-5 h-5" />
+                <span>رام الله - بناية رقم 3</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                جميع الحقوق محفوظة © 2025
+              </p>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg h-64">
+              <iframe
+                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAHqQMQh7eDCe7VCZJwHUbg--tpDQSFrwc&q=رام+الله"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="موقع ريا كلينيك"
+              />
+            </div>
+          </div>
         </div>
       </footer>
     </div>
