@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,20 +28,38 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+interface ShippingMethod {
+  id: string;
+  name: string;
+  price: number;
+}
+
 const Shop = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState("");
+  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([]);
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProducts();
+    fetchShippingMethods();
+
+    // Check if we should open cart from navigation state
+    const state = (location.state as any);
+    if (state?.openCart) {
+      setShowCart(true);
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
 
     const channel = supabase
       .channel('products-changes')
@@ -54,6 +72,20 @@ const Shop = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const fetchShippingMethods = async () => {
+    const { data, error } = await supabase
+      .from('shipping_methods')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching shipping methods:', error);
+    } else {
+      setShippingMethods(data || []);
+    }
+  };
 
   const getProductImage = (imageUrl: string) => {
     const imageMap: Record<string, string> = {
@@ -127,12 +159,24 @@ const Shop = () => {
   };
 
   const getTotalAmount = () => {
+    const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const shippingFee = getShippingFee();
+    return subtotal + shippingFee;
+  };
+
+  const getShippingFee = () => {
+    if (!selectedShippingMethod) return 0;
+    const method = shippingMethods.find(m => m.id === selectedShippingMethod);
+    return method ? method.price : 0;
+  };
+
+  const getSubtotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   const handleCheckout = async () => {
-    if (!customerName || !customerPhone) {
-      toast({ title: "يرجى إدخال الاسم ورقم الهاتف", variant: "destructive" });
+    if (!customerName || !customerPhone || !customerAddress || !selectedShippingMethod) {
+      toast({ title: "يرجى ملء جميع الحقول المطلوبة", variant: "destructive" });
       return;
     }
 
@@ -142,9 +186,11 @@ const Shop = () => {
         .insert({
           customer_name: customerName,
           customer_phone: customerPhone,
-          customer_email: customerEmail,
+          address: customerAddress,
+          shipping_method_id: selectedShippingMethod,
+          shipping_fee: getShippingFee(),
           total_amount: getTotalAmount(),
-          notes: notes,
+          notes: notes || null,
           status: 'pending'
         })
         .select()
@@ -171,7 +217,8 @@ const Shop = () => {
       setShowCheckout(false);
       setCustomerName("");
       setCustomerPhone("");
-      setCustomerEmail("");
+      setCustomerAddress("");
+      setSelectedShippingMethod("");
       setNotes("");
     } catch (error) {
       toast({ title: "خطأ في إرسال الطلب", variant: "destructive" });
@@ -343,6 +390,7 @@ const Shop = () => {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="أدخل اسمك"
+                    required
                   />
                 </div>
                 <div>
@@ -351,25 +399,57 @@ const Shop = () => {
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="05xxxxxxxx"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">البريد الإلكتروني</label>
-                  <Input
-                    type="email"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="example@email.com"
+                  <label className="text-sm font-medium mb-2 block">العنوان *</label>
+                  <Textarea
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    placeholder="أدخل عنوانك الكامل"
+                    rows={2}
+                    required
                   />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">طريقة الشحن *</label>
+                  <select
+                    value={selectedShippingMethod}
+                    onChange={(e) => setSelectedShippingMethod(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    required
+                  >
+                    <option value="">اختر طريقة الشحن</option>
+                    {shippingMethods.map((method) => (
+                      <option key={method.id} value={method.id}>
+                        {method.name} - {method.price.toFixed(2)} ₪
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">ملاحظات</label>
                   <Textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="أي ملاحظات إضافية"
+                    placeholder="أي ملاحظات إضافية (اختياري)"
                     rows={3}
                   />
+                </div>
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span>المجموع الفرعي:</span>
+                    <span>{getSubtotal().toFixed(2)} ₪</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>رسوم الشحن:</span>
+                    <span>{getShippingFee().toFixed(2)} ₪</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>المجموع الكلي:</span>
+                    <span>{getTotalAmount().toFixed(2)} ₪</span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
