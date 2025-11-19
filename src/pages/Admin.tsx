@@ -12,6 +12,7 @@ import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package } 
 import { ServicesManagement } from "@/components/ServicesManagement";
 import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
+import { ReviewsManagement } from "@/components/ReviewsManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -208,7 +209,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
+          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -224,6 +225,10 @@ const Admin = () => {
             <TabsTrigger value="orders" className="gap-2">
               <Package className="w-4 h-4" />
               الطلبات
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="gap-2">
+              <MessageCircle className="w-4 h-4" />
+              التقييمات
             </TabsTrigger>
           </TabsList>
 
@@ -345,6 +350,10 @@ const Admin = () => {
 
           <TabsContent value="orders">
             <OrdersManagement />
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <ReviewsManagement />
           </TabsContent>
         </Tabs>
       </main>
