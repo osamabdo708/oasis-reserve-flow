@@ -44,7 +44,6 @@ interface Service {
   name: string;
   description: string | null;
   image_url: string;
-  price: number;
   currency: string;
   is_active: boolean;
   display_order: number | null;
@@ -63,7 +62,6 @@ export const ServicesManagement = () => {
     name: "",
     description: "",
     image_url: "",
-    price: "",
     currency: "₪",
     is_active: true,
     display_order: "",
@@ -185,7 +183,6 @@ export const ServicesManagement = () => {
         name: formData.name,
         description: formData.description || null,
         image_url: formData.image_url,
-        price: parseFloat(formData.price),
         currency: formData.currency,
         is_active: formData.is_active,
         display_order: formData.display_order ? parseInt(formData.display_order) : null,
@@ -236,7 +233,6 @@ export const ServicesManagement = () => {
       name: service.name,
       description: service.description || "",
       image_url: service.image_url,
-      price: service.price.toString(),
       currency: service.currency,
       is_active: service.is_active,
       display_order: service.display_order?.toString() || "",
@@ -304,7 +300,6 @@ export const ServicesManagement = () => {
       name: "",
       description: "",
       image_url: "",
-      price: "",
       currency: "₪",
       is_active: true,
       display_order: "",
@@ -429,26 +424,10 @@ export const ServicesManagement = () => {
                     </div>
                   </div>
 
-                  {/* Pricing Section */}
+                  {/* Display Order Section */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold border-b pb-2">التسعير والترتيب</h3>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="price" className="text-sm font-medium">السعر الأساسي *</Label>
-                        <div className="relative">
-                          <Input
-                            id="price"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={formData.price}
-                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                            placeholder="0.00"
-                            required
-                            className="h-11"
-                          />
-                        </div>
-                      </div>
+                    <h3 className="text-lg font-semibold border-b pb-2">الإعدادات</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <Label htmlFor="currency" className="text-sm font-medium">العملة</Label>
                         <Input
@@ -627,8 +606,7 @@ export const ServicesManagement = () => {
                   <TableHead className="text-right font-semibold">الصورة</TableHead>
                   <TableHead className="text-right font-semibold">الاسم</TableHead>
                   <TableHead className="text-right font-semibold">الوصف</TableHead>
-                  <TableHead className="text-right font-semibold">السعر</TableHead>
-                  <TableHead className="text-right font-semibold">خيارات المدة</TableHead>
+                  <TableHead className="text-right font-semibold">خيارات المدة والأسعار</TableHead>
                   <TableHead className="text-center font-semibold">الحالة</TableHead>
                   <TableHead className="text-center font-semibold">الإجراءات</TableHead>
                 </TableRow>
@@ -650,15 +628,10 @@ export const ServicesManagement = () => {
                       </p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-semibold">
-                        {service.price} {service.currency}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1.5">
                         {service.duration_options?.map((opt, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {opt.label}: {opt.price} ₪
+                          <Badge key={idx} variant="outline" className="text-xs font-medium">
+                            {opt.label}: {opt.price} {service.currency}
                           </Badge>
                         ))}
                       </div>

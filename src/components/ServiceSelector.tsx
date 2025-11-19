@@ -13,7 +13,6 @@ interface Service {
   name: string;
   description: string | null;
   image_url: string;
-  price: number;
   currency: string;
 }
 
@@ -143,9 +142,6 @@ export const ServiceSelector = ({ selectedService, onServiceSelect }: ServiceSel
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                     {service.description}
                   </p>
-                  <Badge variant="secondary" className="text-base font-bold">
-                    {service.price} {service.currency}
-                  </Badge>
                 </CardContent>
               </Card>
             </CarouselItem>

@@ -14,7 +14,6 @@ interface Service {
   name: string;
   description: string | null;
   image_url: string;
-  price: number;
   currency: string;
 }
 
@@ -140,7 +139,7 @@ const Index = () => {
                   title={service.name}
                   description={service.description || ""}
                   image={getServiceImage(service.image_url, service.name)}
-                  price={`من ${service.price} ${service.currency}`}
+                  price="احجز الآن"
                 />
               ))
             )}
