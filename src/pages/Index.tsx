@@ -70,7 +70,7 @@ const Index = () => {
 <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
   <img
     src="https://i.ibb.co/XZxPCbJq/Picsart-25-11-18-11-07-15-991-removebg-preview-1.png"
-    alt="Riea Clinic"
+    alt="ريا كلينيك"
     className="mx-auto mb-6 w-60 md:w-80 drop-shadow-lg"
   />
 
@@ -198,7 +198,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-secondary/50 py-12">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4 text-foreground">Riea Clinic</h3>
+          <h3 className="text-2xl font-bold mb-4 text-foreground">ريا كلينيك</h3>
           <p className="text-muted-foreground mb-6">
             وجهتك المثالية للاسترخاء والعناية بالنفس
           </p>
