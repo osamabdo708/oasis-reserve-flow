@@ -24,32 +24,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get booking details with service name
+    // Get booking details
     const { data: booking, error: fetchError } = await supabase
       .from('bookings')
-      .select('*, services:service(name)')
+      .select('*')
       .eq('id', bookingId)
       .single();
-
-    if (fetchError) {
-      console.error('Error fetching booking:', fetchError);
-      throw new Error('فشل في تحميل بيانات الحجز');
-    }
-
-    if (!booking) {
-      throw new Error('الحجز غير موجود');
-    }
-
-    // Get service name
-    const serviceName = booking.services?.name || 'خدمة';
-    
-    // Format date to Gregorian
-    const bookingDate = new Date(booking.booking_date);
-    const formattedDate = bookingDate.toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
 
     if (fetchError) {
       console.error('Error fetching booking:', fetchError);
@@ -63,6 +43,23 @@ serve(async (req) => {
     if (booking.status !== 'pending') {
       throw new Error('لا يمكن تأكيد حجز تم تأكيده أو إلغاؤه مسبقاً');
     }
+
+    // Get service name separately
+    const { data: service } = await supabase
+      .from('services')
+      .select('name')
+      .eq('id', booking.service)
+      .single();
+    
+    const serviceName = service?.name || 'خدمة';
+    
+    // Format date to Gregorian
+    const bookingDate = new Date(booking.booking_date);
+    const formattedDate = bookingDate.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 
     // Update booking status to approved
     const { error: updateError } = await supabase
