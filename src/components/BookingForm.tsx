@@ -61,7 +61,7 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
-  // Fetch service duration options
+  // Fetch service duration options with real-time updates
   useEffect(() => {
     const fetchServiceDurations = async () => {
       if (!selectedService) return;
@@ -76,7 +76,18 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
         if (error) throw error;
 
         if (data?.duration_options && Array.isArray(data.duration_options)) {
-          setDurationOptions(data.duration_options as unknown as DurationOption[]);
+          const newOptions = data.duration_options as unknown as DurationOption[];
+          setDurationOptions(newOptions);
+          
+          // Check if currently selected duration still exists
+          const durationExists = newOptions.some(opt => opt.value === selectedDuration);
+          if (!durationExists && newOptions.length > 0) {
+            setSelectedDuration(newOptions[0].value);
+            toast({
+              title: "تم تحديث الخيارات",
+              description: "تم تعديل خيارات المدة. تم اختيار أول خيار متاح تلقائياً.",
+            });
+          }
         }
       } catch (error) {
         console.error('Error fetching service durations:', error);
@@ -84,7 +95,28 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
     };
 
     fetchServiceDurations();
-  }, [selectedService]);
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('service-duration-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'services',
+          filter: `id=eq.${selectedService}`
+        },
+        () => {
+          fetchServiceDurations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedService, selectedDuration]);
 
   const selectedDurationPrice = durationOptions.find(d => d.value === selectedDuration)?.price || 150;
 
