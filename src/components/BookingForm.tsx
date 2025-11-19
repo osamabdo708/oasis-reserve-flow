@@ -39,16 +39,12 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [date, setDate] = useState<Date>();
   const [selectedService] = useState(preSelectedService || "");
   const [selectedTime, setSelectedTime] = useState("");
-  const [selectedDuration, setSelectedDuration] = useState("1 hr");
+  const [selectedDuration, setSelectedDuration] = useState("");
   const [name, setName] = useState("");
   const [countryCode, setCountryCode] = useState("+970");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
-  const [durationOptions, setDurationOptions] = useState<DurationOption[]>([
-    { value: "30 mins", label: "30 دقيقة", price: 100 },
-    { value: "1 hr", label: "ساعة", price: 150 },
-    { value: "1.5 hr", label: "ساعة ونصف", price: 200 },
-  ]);
+  const [durationOptions, setDurationOptions] = useState<DurationOption[]>([]);
   
   // Verification states
   const [verificationCode, setVerificationCode] = useState("");
@@ -79,14 +75,18 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
           const newOptions = data.duration_options as unknown as DurationOption[];
           setDurationOptions(newOptions);
           
-          // Check if currently selected duration still exists
-          const durationExists = newOptions.some(opt => opt.value === selectedDuration);
-          if (!durationExists && newOptions.length > 0) {
-            setSelectedDuration(newOptions[0].value);
-            toast({
-              title: "تم تحديث الخيارات",
-              description: "تم تعديل خيارات المدة. تم اختيار أول خيار متاح تلقائياً.",
-            });
+          // If no duration is selected or current selection doesn't exist in new options
+          if (newOptions.length > 0) {
+            const durationExists = selectedDuration && newOptions.some(opt => opt.value === selectedDuration);
+            if (!durationExists) {
+              setSelectedDuration(newOptions[0].value);
+              if (selectedDuration) {
+                toast({
+                  title: "تم تحديث الخيارات",
+                  description: "تم تعديل خيارات المدة. تم اختيار أول خيار متاح تلقائياً.",
+                });
+              }
+            }
           }
         }
       } catch (error) {
@@ -118,7 +118,7 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
     };
   }, [selectedService, selectedDuration]);
 
-  const selectedDurationPrice = durationOptions.find(d => d.value === selectedDuration)?.price || 150;
+  const selectedDurationPrice = durationOptions.find(d => d.value === selectedDuration)?.price || 0;
 
   const timeSlots = [
     "09:00 ص", "10:00 ص", "11:00 ص", "12:00 م",
@@ -317,10 +317,10 @@ const { error } = await supabase
         description: `سيتم التواصل معك قريباً على الرقم ${phone}`,
       });
 
-      // Reset form (keep service selected)
+      // Reset form (keep service selected and reset to first duration option)
       setDate(undefined);
       setSelectedTime("");
-      setSelectedDuration("1 hr");
+      setSelectedDuration(durationOptions.length > 0 ? durationOptions[0].value : "");
       setName("");
       setPhone("");
       setCountryCode("+970");
