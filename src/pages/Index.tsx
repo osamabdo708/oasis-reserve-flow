@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import massageImg from "@/assets/massage.jpg";
 import hammamImg from "@/assets/hammam.jpg";
 import skincareImg from "@/assets/skincare.jpg";
+import { LatestReviews } from "@/components/LatestReviews";
 
 interface Service {
   id: string;
@@ -154,6 +155,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Latest Reviews Section */}
+      <LatestReviews />
 
       {/* Features Section */}
       <section className="py-20 bg-card">

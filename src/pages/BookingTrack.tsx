@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { RatingForm } from "@/components/RatingForm";
 
 interface Booking {
   id: string;
@@ -46,6 +47,29 @@ const BookingTrack = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (bookings.length > 0) {
+      checkReviewedBookings();
+    }
+  }, [bookings]);
+
+  const checkReviewedBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("booking_id")
+        .in("booking_id", bookings.map(b => b.id));
+
+      if (error) throw error;
+
+      const reviewedIds = new Set(data?.map(r => r.booking_id) || []);
+      setReviewedBookings(reviewedIds);
+    } catch (error) {
+      console.error("Error checking reviews:", error);
+    }
+  };
 
   const getServiceName = (serviceId: string) => {
     return services.find(s => s.id === serviceId)?.name || serviceId;
@@ -274,10 +298,28 @@ const BookingTrack = () => {
                   )}
 
                   {booking.status === 'approved' && (
-                    <div className="pt-4 border-t">
+                    <div className="pt-4 border-t space-y-4">
                       <p className="text-sm text-green-600 dark:text-green-400 text-center font-medium">
                         ✓ تم تأكيد حجزك! نراك قريباً
                       </p>
+                      {!reviewedBookings.has(booking.id) && (
+                        <RatingForm
+                          bookingId={booking.id}
+                          serviceId={booking.service}
+                          serviceName={getServiceName(booking.service)}
+                          customerName={booking.customer_name}
+                          onSuccess={() => {
+                            setReviewedBookings(prev => new Set([...prev, booking.id]));
+                          }}
+                        />
+                      )}
+                      {reviewedBookings.has(booking.id) && (
+                        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                          <p className="text-sm text-green-600 text-center">
+                            ✓ شكراً لك! تم إرسال تقييمك بنجاح
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
