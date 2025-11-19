@@ -6,7 +6,8 @@ import { ServiceSelector } from "@/components/ServiceSelector";
 import { ArrowRight } from "lucide-react";
 
 const Booking = () => {
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<{ id: string; name: string } | null>(null);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -37,13 +38,16 @@ const Booking = () => {
           <h2 className="text-2xl font-bold text-center mb-6">اختر الخدمة</h2>
           <ServiceSelector
             selectedService={selectedService}
-            onServiceSelect={(serviceName) => setSelectedService(serviceName)}
+            onServiceSelect={(serviceId, serviceName) => setSelectedService({ id: serviceId, name: serviceName })}
           />
         </div>
 
         {selectedService && (
           <div className="mt-12">
-            <BookingForm preSelectedService={selectedService} preSelectedServiceName={selectedService} />
+            <BookingForm 
+              preSelectedService={selectedService.id} 
+              preSelectedServiceName={selectedService.name} 
+            />
           </div>
         )}
       </main>
