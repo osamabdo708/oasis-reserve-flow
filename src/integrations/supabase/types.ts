@@ -179,6 +179,7 @@ export type Database = {
           currency: string
           description: string | null
           display_order: number | null
+          duration_options: Json | null
           id: string
           image_url: string
           is_active: boolean
@@ -191,6 +192,7 @@ export type Database = {
           currency?: string
           description?: string | null
           display_order?: number | null
+          duration_options?: Json | null
           id?: string
           image_url: string
           is_active?: boolean
@@ -203,6 +205,7 @@ export type Database = {
           currency?: string
           description?: string | null
           display_order?: number | null
+          duration_options?: Json | null
           id?: string
           image_url?: string
           is_active?: boolean
