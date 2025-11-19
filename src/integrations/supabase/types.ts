@@ -184,7 +184,6 @@ export type Database = {
           image_url: string
           is_active: boolean
           name: string
-          price: number
           updated_at: string
         }
         Insert: {
@@ -197,7 +196,6 @@ export type Database = {
           image_url: string
           is_active?: boolean
           name: string
-          price: number
           updated_at?: string
         }
         Update: {
@@ -210,7 +208,6 @@ export type Database = {
           image_url?: string
           is_active?: boolean
           name?: string
-          price?: number
           updated_at?: string
         }
         Relationships: []
