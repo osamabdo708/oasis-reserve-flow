@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { BookingTimeline } from "@/components/BookingTimeline";
+import { calculateTimeBlocks, parseDuration, type TimeBlock } from "@/utils/timeCalculations";
 
 interface BookingFormProps {
   preSelectedService?: string;
@@ -54,7 +56,7 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
   const [isVerifying, setIsVerifying] = useState(false);
 
   // Bookings state
-  const [bookedSlots, setBookedSlots] = useState<{ [key: string]: string[] }>({});
+  const [bookedBlocks, setBookedBlocks] = useState<TimeBlock[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
   // Fetch service duration options with real-time updates
@@ -136,41 +138,53 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
         const dateStr = date.toISOString().split('T')[0];
         const { data, error } = await supabase
           .from('bookings')
-          .select('booking_date, booking_time')
+          .select('booking_time, booking_duration')
           .eq('booking_date', dateStr)
           .eq('status', 'approved');
 
         if (error) throw error;
 
-        // Group booked times by date
-        const slots: { [key: string]: string[] } = {};
-        data?.forEach((booking) => {
-          if (!slots[booking.booking_date]) {
-            slots[booking.booking_date] = [];
-          }
-          slots[booking.booking_date].push(booking.booking_time);
-        });
-
-        setBookedSlots(slots);
+        // Calculate time blocks from bookings
+        const blocks = calculateTimeBlocks(data || []);
+        setBookedBlocks(blocks);
       } catch (error) {
         console.error('Error fetching bookings:', error);
+        toast({
+          title: "خطأ",
+          description: "فشل في تحميل المواعيد المحجوزة",
+          variant: "destructive",
+        });
       } finally {
         setIsLoadingBookings(false);
       }
     };
 
     fetchBookings();
+
+    // Set up real-time subscription for bookings
+    if (date) {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      const channel = supabase
+        .channel('booking-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `booking_date=eq.${formattedDate}`
+          },
+          () => {
+            fetchBookings();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [date]);
-
-  // Get booked times for the selected date
-  const bookedTimesForSelectedDate = date 
-    ? bookedSlots[date.toISOString().split('T')[0]] || []
-    : [];
-
-  // Check if a time slot is available
-  const isTimeSlotAvailable = (time: string) => {
-    return !bookedTimesForSelectedDate.includes(time);
-  };
 
   const handleSendVerification = async () => {
     if (!phone) {
@@ -403,44 +417,26 @@ const { error } = await supabase
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="time" className="text-base">الوقت *</Label>
+        <Label className="text-base">اختيار الوقت *</Label>
         {isLoadingBookings ? (
-          <div className="h-12 flex items-center justify-center border rounded-md bg-muted/50">
+          <div className="h-24 flex items-center justify-center border rounded-md bg-muted/50">
             <p className="text-sm text-muted-foreground">جاري التحميل...</p>
           </div>
         ) : !date ? (
-          <div className="h-12 flex items-center justify-center border rounded-md bg-muted/50">
+          <div className="h-24 flex items-center justify-center border rounded-md bg-muted/50">
             <p className="text-sm text-muted-foreground">الرجاء اختيار التاريخ أولاً</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {timeSlots.map((time) => {
-              const isAvailable = isTimeSlotAvailable(time);
-              const isSelected = selectedTime === time;
-              
-              return (
-                <button
-                  key={time}
-                  type="button"
-                  onClick={() => isAvailable && setSelectedTime(time)}
-                  disabled={!isAvailable}
-                  className={cn(
-                    "h-12 rounded-md border-2 transition-all font-medium",
-                    isSelected && isAvailable && "border-primary bg-primary text-primary-foreground",
-                    !isSelected && isAvailable && "border-border hover:border-primary hover:bg-primary/10",
-                    !isAvailable && "border-destructive/20 bg-destructive/5 cursor-not-allowed opacity-50"
-                  )}
-                >
-                  <div className="flex flex-col items-center justify-center gap-1">
-                    <span className="text-sm">{time}</span>
-                    {!isAvailable && (
-                      <Badge variant="destructive" className="text-xs px-1 py-0 h-4">محجوز</Badge>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+        ) : !selectedDuration ? (
+          <div className="h-24 flex items-center justify-center border rounded-md bg-muted/50">
+            <p className="text-sm text-muted-foreground">الرجاء اختيار المدة أولاً</p>
           </div>
+        ) : (
+          <BookingTimeline
+            selectedDuration={selectedDuration}
+            selectedTime={selectedTime}
+            bookedBlocks={bookedBlocks}
+            onTimeSelect={setSelectedTime}
+          />
         )}
       </div>
 
