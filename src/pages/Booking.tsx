@@ -45,6 +45,7 @@ const Booking = () => {
         {selectedService && (
           <div className="mt-12">
             <BookingForm 
+              key={selectedService.id}
               preSelectedService={selectedService.id} 
               preSelectedServiceName={selectedService.name} 
             />
