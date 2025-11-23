@@ -458,10 +458,6 @@ const Admin = () => {
             <ClientsManagement />
           </TabsContent>
 
-          <TabsContent value="shipping">
-            <ShippingMethodsManagement />
-          </TabsContent>
-
           <TabsContent value="reviews">
             <ReviewsManagement />
           </TabsContent>
