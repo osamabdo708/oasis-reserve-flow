@@ -237,6 +237,57 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          booking_date: string
+          booking_id: string
+          booking_time: string
+          created_at: string
+          customer_name: string
+          error_message: string | null
+          id: string
+          message: string
+          phone_number: string
+          scheduled_for: string
+          sent_at: string | null
+          service_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          booking_id: string
+          booking_time: string
+          created_at?: string
+          customer_name: string
+          error_message?: string | null
+          id?: string
+          message: string
+          phone_number: string
+          scheduled_for: string
+          sent_at?: string | null
+          service_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_id?: string
+          booking_time?: string
+          created_at?: string
+          customer_name?: string
+          error_message?: string | null
+          id?: string
+          message?: string
+          phone_number?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          service_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           booking_id: string

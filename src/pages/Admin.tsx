@@ -8,13 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users, Trash2 } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users, Trash2, Bell } from "lucide-react";
 import { ServicesManagement } from "@/components/ServicesManagement";
 import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
 import { ReviewsManagement } from "@/components/ReviewsManagement";
 import { ClientsManagement } from "@/components/ClientsManagement";
 import { ShippingMethodsManagement } from "@/components/ShippingMethodsManagement";
+import RemindersManagement from "@/components/RemindersManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -267,7 +268,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-7 mb-8">
+          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-8 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -295,6 +296,10 @@ const Admin = () => {
             <TabsTrigger value="reviews" className="gap-2">
               <MessageCircle className="w-4 h-4" />
               التقييمات
+            </TabsTrigger>
+            <TabsTrigger value="reminders" className="gap-2">
+              <Bell className="w-4 h-4" />
+              التذكيرات
             </TabsTrigger>
           </TabsList>
 
@@ -460,6 +465,10 @@ const Admin = () => {
 
           <TabsContent value="reviews">
             <ReviewsManagement />
+          </TabsContent>
+
+          <TabsContent value="reminders">
+            <RemindersManagement />
           </TabsContent>
         </Tabs>
       </main>
