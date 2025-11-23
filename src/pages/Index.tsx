@@ -227,46 +227,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-card">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">حجز سهل</h3>
-              <p className="text-muted-foreground">احجز موعدك بكل سهولة عبر موقعنا</p>
-            </div>
-
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Clock className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">مواعيد مرنة</h3>
-              <p className="text-muted-foreground">نوفر مواعيد تناسب جدولك اليومي</p>
-            </div>
-
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">موقع مميز</h3>
-              <p className="text-muted-foreground">في قلب المدينة مع سهولة الوصول</p>
-            </div>
-
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Phone className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">دعم متواصل</h3>
-              <p className="text-muted-foreground">نحن هنا للإجابة على استفساراتك</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Dr. Reia Section */}
+            {/* About Dr. Reia Section */}
       <section className="py-20 bg-gradient-to-b from-background to-secondary/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -311,6 +272,47 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Calendar className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">حجز سهل</h3>
+              <p className="text-muted-foreground">احجز موعدك بكل سهولة عبر موقعنا</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Clock className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">مواعيد مرنة</h3>
+              <p className="text-muted-foreground">نوفر مواعيد تناسب جدولك اليومي</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <MapPin className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">موقع مميز</h3>
+              <p className="text-muted-foreground">في قلب المدينة مع سهولة الوصول</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Phone className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">دعم متواصل</h3>
+              <p className="text-muted-foreground">نحن هنا للإجابة على استفساراتك</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
 
       {/* Footer */}
       <footer className="bg-secondary/50 py-12">
