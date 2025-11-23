@@ -35,25 +35,37 @@ interface Booking {
   created_at: string;
 }
 
-const services = [
-  { id: "massage", name: "مساج استرخائي" },
-  { id: "skincare", name: "عناية بالبشرة" },
-  { id: "hammam", name: "حمام مغربي" },
-  { id: "facial", name: "تنظيف البشرة" },
-];
-
 const BookingTrack = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set());
+  const [services, setServices] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   useEffect(() => {
     if (bookings.length > 0) {
       checkReviewedBookings();
     }
   }, [bookings]);
+
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, name')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
 
   const checkReviewedBookings = async () => {
     try {
