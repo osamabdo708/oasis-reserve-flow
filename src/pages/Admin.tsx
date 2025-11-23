@@ -267,7 +267,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-5xl mx-auto grid-cols-6 mb-8">
+          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-7 mb-8">
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -283,6 +283,10 @@ const Admin = () => {
             <TabsTrigger value="orders" className="gap-2">
               <Package className="w-4 h-4" />
               الطلبات
+            </TabsTrigger>
+            <TabsTrigger value="shipping" className="gap-2">
+              <Package className="w-4 h-4" />
+              الشحن
             </TabsTrigger>
             <TabsTrigger value="clients" className="gap-2">
               <Users className="w-4 h-4" />
@@ -444,6 +448,10 @@ const Admin = () => {
 
           <TabsContent value="orders">
             <OrdersManagement />
+          </TabsContent>
+
+          <TabsContent value="shipping">
+            <ShippingMethodsManagement />
           </TabsContent>
 
           <TabsContent value="clients">
