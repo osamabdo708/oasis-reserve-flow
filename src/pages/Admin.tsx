@@ -58,7 +58,7 @@ const Admin = () => {
 
   useEffect(() => {
     // Check if already authenticated
-    const adminAuth = sessionStorage.getItem("adminAuth");
+    const adminAuth = localStorage.getItem("adminAuth");
     if (adminAuth === "true") {
       setIsAuthenticated(true);
       fetchServices();
@@ -86,7 +86,7 @@ const Admin = () => {
     e.preventDefault();
     
     if (username === "admin" && password === "admin") {
-      sessionStorage.setItem("adminAuth", "true");
+      localStorage.setItem("adminAuth", "true");
       setIsAuthenticated(true);
       fetchServices();
       fetchBookings();
@@ -104,7 +104,7 @@ const Admin = () => {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("adminAuth");
+    localStorage.removeItem("adminAuth");
     setIsAuthenticated(false);
     setUsername("");
     setPassword("");
