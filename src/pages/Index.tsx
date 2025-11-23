@@ -11,6 +11,8 @@ import hammamImg from "@/assets/hammam.jpg";
 import skincareImg from "@/assets/skincare.jpg";
 import doctorReiaImg from "@/assets/doctor-reia.jpg";
 import { LatestReviews } from "@/components/LatestReviews";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Service {
   id: string;
@@ -32,6 +34,7 @@ const Index = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   const getServiceImage = (imageUrl: string, serviceName: string) => {
     if (imageUrl?.startsWith('http')) return imageUrl;
@@ -157,24 +160,51 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto">
-            {isLoading ? (
-              <p className="col-span-full text-center text-muted-foreground">جاري التحميل...</p>
-            ) : services.length === 0 ? (
-              <p className="col-span-full text-center text-muted-foreground">لا توجد خدمات متاحة</p>
-            ) : (
-              services.map((service) => (
-                <div key={service.id} className="md:block">
-                  <ServiceCard
-                    title={service.name}
-                    description={service.description || ""}
-                    image={getServiceImage(service.image_url, service.name)}
-                    price="احجز الآن"
-                  />
-                </div>
-              ))
-            )}
-          </div>
+          {isMobile ? (
+            <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-6xl mx-auto">
+              <CarouselContent className="-ml-2">
+                {isLoading ? (
+                  <CarouselItem className="pl-2 basis-1/2">
+                    <p className="text-center text-muted-foreground">جاري التحميل...</p>
+                  </CarouselItem>
+                ) : services.length === 0 ? (
+                  <CarouselItem className="pl-2 basis-1/2">
+                    <p className="text-center text-muted-foreground">لا توجد خدمات متاحة</p>
+                  </CarouselItem>
+                ) : (
+                  services.map((service) => (
+                    <CarouselItem key={service.id} className="pl-2 basis-1/2">
+                      <ServiceCard
+                        title={service.name}
+                        description={service.description || ""}
+                        image={getServiceImage(service.image_url, service.name)}
+                        price="احجز الآن"
+                      />
+                    </CarouselItem>
+                  ))
+                )}
+              </CarouselContent>
+            </Carousel>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto">
+              {isLoading ? (
+                <p className="col-span-full text-center text-muted-foreground">جاري التحميل...</p>
+              ) : services.length === 0 ? (
+                <p className="col-span-full text-center text-muted-foreground">لا توجد خدمات متاحة</p>
+              ) : (
+                services.map((service) => (
+                  <div key={service.id} className="md:block">
+                    <ServiceCard
+                      title={service.name}
+                      description={service.description || ""}
+                      image={getServiceImage(service.image_url, service.name)}
+                      price="احجز الآن"
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Link to="/booking">
@@ -201,23 +231,47 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto">
-            {products.length === 0 ? (
-              <p className="col-span-full text-center text-muted-foreground">لا توجد منتجات متاحة</p>
-            ) : (
-              products.map((product) => (
-                <div key={product.id} className="md:block">
-                  <ProductCard
-                    id={product.id}
-                    name={product.name}
-                    description={product.description}
-                    image={product.image_url}
-                    price={product.price}
-                  />
-                </div>
-              ))
-            )}
-          </div>
+          {isMobile ? (
+            <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-6xl mx-auto">
+              <CarouselContent className="-ml-2">
+                {products.length === 0 ? (
+                  <CarouselItem className="pl-2 basis-1/2">
+                    <p className="text-center text-muted-foreground">لا توجد منتجات متاحة</p>
+                  </CarouselItem>
+                ) : (
+                  products.map((product) => (
+                    <CarouselItem key={product.id} className="pl-2 basis-1/2">
+                      <ProductCard
+                        id={product.id}
+                        name={product.name}
+                        description={product.description}
+                        image={product.image_url}
+                        price={product.price}
+                      />
+                    </CarouselItem>
+                  ))
+                )}
+              </CarouselContent>
+            </Carousel>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 max-w-6xl mx-auto">
+              {products.length === 0 ? (
+                <p className="col-span-full text-center text-muted-foreground">لا توجد منتجات متاحة</p>
+              ) : (
+                products.map((product) => (
+                  <div key={product.id} className="md:block">
+                    <ProductCard
+                      id={product.id}
+                      name={product.name}
+                      description={product.description}
+                      image={product.image_url}
+                      price={product.price}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Link to="/shop">
@@ -276,39 +330,39 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-card">
+      <section className="py-12 md:py-20 bg-card">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-primary" />
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 max-w-6xl mx-auto">
+            <div className="text-center p-3 md:p-6">
+              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 md:mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Calendar className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">حجز سهل</h3>
-              <p className="text-muted-foreground">احجز موعدك بكل سهولة عبر موقعنا</p>
+              <h3 className="font-bold text-sm md:text-lg mb-1 md:mb-2">حجز سهل</h3>
+              <p className="text-xs md:text-base text-muted-foreground">احجز موعدك بكل سهولة عبر موقعنا</p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Clock className="w-8 h-8 text-primary" />
+            <div className="text-center p-3 md:p-6">
+              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 md:mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">مواعيد مرنة</h3>
-              <p className="text-muted-foreground">نوفر مواعيد تناسب جدولك اليومي</p>
+              <h3 className="font-bold text-sm md:text-lg mb-1 md:mb-2">مواعيد مرنة</h3>
+              <p className="text-xs md:text-base text-muted-foreground">نوفر مواعيد تناسب جدولك اليومي</p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-primary" />
+            <div className="text-center p-3 md:p-6">
+              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 md:mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <MapPin className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">موقع مميز</h3>
-              <p className="text-muted-foreground">في قلب المدينة مع سهولة الوصول</p>
+              <h3 className="font-bold text-sm md:text-lg mb-1 md:mb-2">موقع مميز</h3>
+              <p className="text-xs md:text-base text-muted-foreground">في قلب المدينة مع سهولة الوصول</p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <Phone className="w-8 h-8 text-primary" />
+            <div className="text-center p-3 md:p-6">
+              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 md:mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                <Phone className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">دعم متواصل</h3>
-              <p className="text-muted-foreground">نحن هنا للإجابة على استفساراتك</p>
+              <h3 className="font-bold text-sm md:text-lg mb-1 md:mb-2">دعم متواصل</h3>
+              <p className="text-xs md:text-base text-muted-foreground">نحن هنا للإجابة على استفساراتك</p>
             </div>
           </div>
         </div>
