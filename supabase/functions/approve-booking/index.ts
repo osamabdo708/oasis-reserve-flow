@@ -72,6 +72,34 @@ serve(async (req) => {
       throw new Error('فشل في تحديث حالة الحجز');
     }
 
+    // Create reminder record for this booking (1 hour before booking time)
+    const bookingDateTime = new Date(`${booking.booking_date}T${convertArabicTimeToISO(booking.booking_time)}`);
+    const reminderTime = new Date(bookingDateTime.getTime() - 60 * 60 * 1000); // 1 hour before
+    
+    const reminderMessage = `مرحباً ${booking.customer_name}،\n\nهذا تذكير بموعدك في سبا ريا:\n\n📅 التاريخ: ${formattedDate}\n🕐 الوقت: ${booking.booking_time}\n💆 الخدمة: ${serviceName}\n⏱ المدة: ${booking.booking_duration}\n\nنتطلع لرؤيتك قريباً! 🌸`;
+
+    // Create reminder record
+    const { error: reminderError } = await supabase
+      .from('reminders')
+      .insert({
+        booking_id: booking.id,
+        phone_number: booking.phone_number,
+        customer_name: booking.customer_name,
+        service_name: serviceName,
+        booking_date: booking.booking_date,
+        booking_time: booking.booking_time,
+        message: reminderMessage,
+        status: 'pending',
+        scheduled_for: reminderTime.toISOString()
+      });
+
+    if (reminderError) {
+      console.error('Error creating reminder:', reminderError);
+      // Don't fail the approval if reminder creation fails
+    } else {
+      console.log('Reminder created for booking:', booking.id, 'scheduled for:', reminderTime.toISOString());
+    }
+
     // Send WhatsApp confirmation message
     const messageText = `مرحباً ${booking.customer_name}! ✅\n\nتم تأكيد حجزك بنجاح:\n\nالخدمة: ${serviceName}\nالتاريخ: ${formattedDate}\nالوقت: ${booking.booking_time}\nالمدة: ${booking.booking_duration}\nالسعر: ${booking.price} ₪\n\nنتطلع لرؤيتك! 🌟`;
     
@@ -129,3 +157,26 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to convert Arabic time format to ISO time
+function convertArabicTimeToISO(arabicTime: string): string {
+  // Example: "02:00 م" or "09:00 ص"
+  const cleaned = arabicTime.trim();
+  const match = cleaned.match(/(\d+):(\d+)/);
+  
+  if (!match) return '00:00:00';
+  
+  let hour = parseInt(match[1]);
+  const minute = match[2];
+  
+  const isPM = cleaned.includes('م') || cleaned.includes('PM');
+  const isAM = cleaned.includes('ص') || cleaned.includes('AM');
+  
+  if (isPM && hour !== 12) {
+    hour += 12;
+  } else if (isAM && hour === 12) {
+    hour = 0;
+  }
+  
+  return `${hour.toString().padStart(2, '0')}:${minute}:00`;
+}
