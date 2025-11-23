@@ -112,6 +112,15 @@ const BookingTrack = () => {
       return;
     }
 
+    if (phoneNumber.replace(/\D/g, '').length < 9) {
+      toast({
+        title: "خطأ",
+        description: "رقم الهاتف يجب أن يكون 9 أرقام على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setSearched(true);
     
