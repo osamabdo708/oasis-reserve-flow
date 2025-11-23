@@ -25,32 +25,28 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Calculate time range: 55 minutes to 65 minutes from now
+    // Get current time
     const now = new Date();
-    const startTime = new Date(now.getTime() + 55 * 60 * 1000);
-    const endTime = new Date(now.getTime() + 65 * 60 * 1000);
 
-    console.log("Checking for bookings between:", startTime.toISOString(), "and", endTime.toISOString());
+    console.log("Checking for pending reminders to send at:", now.toISOString());
 
-    // Fetch approved bookings for today that are 1 hour away
-    const today = now.toISOString().split('T')[0];
-    
-    const { data: bookings, error: bookingsError } = await supabase
-      .from('bookings')
+    // Fetch pending reminders that should be sent now (scheduled_for <= now)
+    const { data: pendingReminders, error: remindersError } = await supabase
+      .from('reminders')
       .select('*')
-      .eq('booking_date', today)
-      .eq('status', 'approved');
+      .eq('status', 'pending')
+      .lte('scheduled_for', now.toISOString());
 
-    if (bookingsError) {
-      console.error("Error fetching bookings:", bookingsError);
-      throw bookingsError;
+    if (remindersError) {
+      console.error("Error fetching reminders:", remindersError);
+      throw remindersError;
     }
 
-    console.log(`Found ${bookings?.length || 0} approved bookings for today`);
+    console.log(`Found ${pendingReminders?.length || 0} pending reminders to send`);
 
-    if (!bookings || bookings.length === 0) {
+    if (!pendingReminders || pendingReminders.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No approved bookings found for today', count: 0 }),
+        JSON.stringify({ message: 'No pending reminders to send', count: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
@@ -58,69 +54,14 @@ serve(async (req) => {
     const results = {
       sent: 0,
       failed: 0,
-      skipped: 0,
       errors: [] as string[]
     };
 
-    for (const booking of bookings) {
+    for (const reminder of pendingReminders) {
       try {
-        // Parse booking time to check if it's within the 1-hour window
-        const bookingDateTime = new Date(`${booking.booking_date}T${convertArabicTimeToISO(booking.booking_time)}`);
-        
-        console.log(`Checking booking ${booking.id} scheduled for:`, bookingDateTime.toISOString());
-
-        if (bookingDateTime < startTime || bookingDateTime > endTime) {
-          console.log(`Skipping booking ${booking.id} - not in reminder window`);
-          results.skipped++;
-          continue;
-        }
-
-        // Check if reminder already sent or pending
-        const { data: existingReminder } = await supabase
-          .from('reminders')
-          .select('*')
-          .eq('booking_id', booking.id)
-          .in('status', ['sent', 'pending'])
-          .single();
-
-        if (existingReminder) {
-          console.log(`Skipping booking ${booking.id} - reminder already exists`);
-          results.skipped++;
-          continue;
-        }
-
-        // Create reminder message
-        const message = `مرحباً ${booking.customer_name}،\n\nهذا تذكير بموعدك في سبا ريا:\n\n📅 التاريخ: ${formatDate(booking.booking_date)}\n🕐 الوقت: ${booking.booking_time}\n💆 الخدمة: ${booking.service}\n⏱ المدة: ${booking.booking_duration}\n\nنتطلع لرؤيتك قريباً! 🌸`;
-
-        const scheduledFor = new Date(bookingDateTime.getTime() - 60 * 60 * 1000); // 1 hour before
-
-        // Create reminder record
-        const { data: reminder, error: reminderError } = await supabase
-          .from('reminders')
-          .insert({
-            booking_id: booking.id,
-            phone_number: booking.phone_number,
-            customer_name: booking.customer_name,
-            service_name: booking.service,
-            booking_date: booking.booking_date,
-            booking_time: booking.booking_time,
-            message: message,
-            status: 'pending',
-            scheduled_for: scheduledFor
-          })
-          .select()
-          .single();
-
-        if (reminderError) {
-          console.error(`Error creating reminder for booking ${booking.id}:`, reminderError);
-          results.errors.push(`Booking ${booking.id}: ${reminderError.message}`);
-          results.failed++;
-          continue;
-        }
+        console.log(`Sending reminder ${reminder.id} to ${reminder.phone_number}`);
 
         // Send WhatsApp message
-        console.log(`Sending WhatsApp reminder to ${booking.phone_number}`);
-        
         const whatsappResponse = await fetch('https://wp.palmart.ps/send', {
           method: 'POST',
           headers: {
@@ -128,8 +69,8 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            phone: booking.phone_number,
-            message: message
+            phone: reminder.phone_number,
+            message: reminder.message
           }),
         });
 
@@ -145,7 +86,7 @@ serve(async (req) => {
             })
             .eq('id', reminder.id);
 
-          console.log(`Reminder sent successfully for booking ${booking.id}`);
+          console.log(`Reminder sent successfully: ${reminder.id}`);
           results.sent++;
         } else {
           // Update reminder status to failed
@@ -157,15 +98,25 @@ serve(async (req) => {
             })
             .eq('id', reminder.id);
 
-          console.error(`Failed to send reminder for booking ${booking.id}:`, whatsappData);
-          results.errors.push(`Booking ${booking.id}: WhatsApp API error`);
+          console.error(`Failed to send reminder ${reminder.id}:`, whatsappData);
+          results.errors.push(`Reminder ${reminder.id}: WhatsApp API error`);
           results.failed++;
         }
 
       } catch (error) {
-        console.error(`Error processing booking ${booking.id}:`, error);
+        console.error(`Error processing reminder ${reminder.id}:`, error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        results.errors.push(`Booking ${booking.id}: ${errorMessage}`);
+        
+        // Update reminder status to failed
+        await supabase
+          .from('reminders')
+          .update({
+            status: 'failed',
+            error_message: errorMessage
+          })
+          .eq('id', reminder.id);
+
+        results.errors.push(`Reminder ${reminder.id}: ${errorMessage}`);
         results.failed++;
       }
     }
@@ -195,37 +146,3 @@ serve(async (req) => {
     );
   }
 });
-
-// Helper function to convert Arabic time format to ISO time
-function convertArabicTimeToISO(arabicTime: string): string {
-  // Example: "02:00 م" or "09:00 ص"
-  const cleaned = arabicTime.trim();
-  const match = cleaned.match(/(\d+):(\d+)/);
-  
-  if (!match) return '00:00:00';
-  
-  let hour = parseInt(match[1]);
-  const minute = match[2];
-  
-  const isPM = cleaned.includes('م') || cleaned.includes('PM');
-  const isAM = cleaned.includes('ص') || cleaned.includes('AM');
-  
-  if (isPM && hour !== 12) {
-    hour += 12;
-  } else if (isAM && hour === 12) {
-    hour = 0;
-  }
-  
-  return `${hour.toString().padStart(2, '0')}:${minute}:00`;
-}
-
-// Helper function to format date in Arabic
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ar-EG', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
