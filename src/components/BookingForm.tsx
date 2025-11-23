@@ -135,7 +135,12 @@ export const BookingForm = ({ preSelectedService, preSelectedServiceName }: Book
 
       setIsLoadingBookings(true);
       try {
-        const dateStr = date.toISOString().split('T')[0];
+        // Format date to YYYY-MM-DD using local timezone
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        
         const { data, error } = await supabase
           .from('bookings')
           .select('booking_time, booking_duration')
@@ -310,11 +315,17 @@ let phoneDigits = phone.replace(/\D/g, '');
 phoneDigits = phoneDigits.replace(/^0+/, ''); // remove leading zeros from the number part
 const fullPhoneNumber = `${countryCode}${phoneDigits}`;
 
+// Format date to YYYY-MM-DD using local timezone
+const year = date.getFullYear();
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const day = String(date.getDate()).padStart(2, '0');
+const formattedDate = `${year}-${month}-${day}`;
+
 const { error } = await supabase
   .from('bookings')
   .insert({
     service: selectedService,
-    booking_date: date.toISOString().split('T')[0],
+    booking_date: formattedDate,
     booking_time: selectedTime,
     booking_duration: selectedDuration,
     price: selectedDurationPrice,
