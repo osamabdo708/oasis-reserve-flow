@@ -26,10 +26,10 @@ export const ProductCard = ({ id, name, description, image, price }: ProductCard
             </div>
           )}
         </div>
-        <CardContent className="p-6 text-center">
-          <h3 className="text-xl font-bold mb-2 text-foreground">{name}</h3>
-          <p className="text-muted-foreground mb-3 leading-relaxed line-clamp-2">{description || "منتج مميز"}</p>
-          <p className="text-accent font-bold text-lg">{price} ₪</p>
+        <CardContent className="p-3 md:p-6 text-center">
+          <h3 className="text-base md:text-xl font-bold mb-1 md:mb-2 text-foreground">{name}</h3>
+          <p className="text-xs md:text-base text-muted-foreground mb-2 md:mb-3 leading-relaxed line-clamp-2">{description || "منتج مميز"}</p>
+          <p className="text-accent font-bold text-sm md:text-lg">{price} ₪</p>
         </CardContent>
       </Card>
     </Link>
