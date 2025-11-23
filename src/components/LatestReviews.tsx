@@ -5,36 +5,56 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface Review {
   id: string;
-  service_name: string;
+  service_id: string;
   customer_name: string;
   rating: number;
   feedback: string | null;
   created_at: string;
 }
 
+interface Service {
+  id: string;
+  name: string;
+}
+
 export const LatestReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchLatestReviews();
+    fetchServicesAndReviews();
   }, []);
 
-  const fetchLatestReviews = async () => {
+  const fetchServicesAndReviews = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch services
+      const { data: servicesData, error: servicesError } = await supabase
+        .from("services")
+        .select("id, name")
+        .eq("is_active", true);
+
+      if (servicesError) throw servicesError;
+      setServices(servicesData || []);
+
+      // Fetch reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from("reviews")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
 
-      if (error) throw error;
-      setReviews(data || []);
+      if (reviewsError) throw reviewsError;
+      setReviews(reviewsData || []);
     } catch (error) {
-      console.error("Error fetching latest reviews:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getServiceName = (serviceId: string) => {
+    return services.find(s => s.id === serviceId)?.name || serviceId;
   };
 
   const renderStars = (rating: number) => {
@@ -77,7 +97,7 @@ export const LatestReviews = () => {
                     <p className="font-semibold">{review.customer_name}</p>
                     {renderStars(review.rating)}
                   </div>
-                  <p className="text-sm text-muted-foreground">{review.service_name}</p>
+                  <p className="text-sm text-muted-foreground">{getServiceName(review.service_id)}</p>
                   {review.feedback && (
                     <p className="text-sm leading-relaxed">{review.feedback}</p>
                   )}
