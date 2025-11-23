@@ -15,6 +15,7 @@ interface Review {
 interface Service {
   id: string;
   name: string;
+  image_url: string;
 }
 
 export const LatestReviews = () => {
@@ -31,7 +32,7 @@ export const LatestReviews = () => {
       // Fetch services
       const { data: servicesData, error: servicesError } = await supabase
         .from("services")
-        .select("id, name")
+        .select("id, name, image_url")
         .eq("is_active", true);
 
       if (servicesError) throw servicesError;
@@ -55,6 +56,10 @@ export const LatestReviews = () => {
 
   const getServiceName = (serviceId: string) => {
     return services.find(s => s.id === serviceId)?.name || serviceId;
+  };
+
+  const getServiceImage = (serviceId: string) => {
+    return services.find(s => s.id === serviceId)?.image_url || "";
   };
 
   const renderStars = (rating: number) => {
@@ -90,14 +95,23 @@ export const LatestReviews = () => {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {reviews.map((review) => (
-            <Card key={review.id} className="hover:shadow-lg transition-shadow">
+            <Card key={review.id} className="hover:shadow-lg transition-shadow overflow-hidden">
+              {getServiceImage(review.service_id) && (
+                <div className="h-32 overflow-hidden">
+                  <img 
+                    src={getServiceImage(review.service_id)} 
+                    alt={getServiceName(review.service_id)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold">{review.customer_name}</p>
                     {renderStars(review.rating)}
                   </div>
-                  <p className="text-sm text-muted-foreground">{getServiceName(review.service_id)}</p>
+                  <p className="text-sm text-muted-foreground font-medium">{getServiceName(review.service_id)}</p>
                   {review.feedback && (
                     <p className="text-sm leading-relaxed">{review.feedback}</p>
                   )}
