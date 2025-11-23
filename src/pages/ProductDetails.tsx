@@ -160,12 +160,14 @@ const ProductDetails = () => {
                 // Navigate to shop with cart open state
                 navigate('/shop', { state: { openCart: true } });
               }}
-              className="relative"
+              className="relative gap-2"
             >
-              <ShoppingCart className="ml-2" />
+              <ShoppingCart className="h-4 w-4" />
               السلة
               {cartCount > 0 && (
-                <Badge className="absolute -top-2 -left-2">{cartCount}</Badge>
+                <Badge variant="default" className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  {cartCount}
+                </Badge>
               )}
             </Button>
           </div>
@@ -247,7 +249,7 @@ const ProductDetails = () => {
 
                 <Button 
                   onClick={handleAddToCart}
-                  variant="spa"
+                  variant="default"
                   size="lg"
                   className="w-full gap-2 text-lg"
                 >
