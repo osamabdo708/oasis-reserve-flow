@@ -11,6 +11,7 @@ import { CartItem } from '@/hooks/useCart';
 interface ShippingMethod {
   id: string;
   name: string;
+  duration: string;
   price: number;
 }
 
@@ -249,7 +250,7 @@ export const ShoppingCart = ({
                   <option value="">اختر طريقة الشحن</option>
                   {shippingMethods.map((method) => (
                     <option key={method.id} value={method.id}>
-                      {method.name} - {method.price.toFixed(2)} ₪
+                      {method.name} ({method.duration}) - {method.price.toFixed(2)} ₪
                     </option>
                   ))}
                 </select>
