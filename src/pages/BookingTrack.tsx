@@ -197,20 +197,17 @@ const BookingTrack = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-6xl">
-        <div className="text-center mb-12">
-          {/* <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            تتبع حجزك
-          </h1> */}
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+      <main className="container mx-auto px-4 py-6 md:py-12 max-w-6xl">
+        <div className="text-center mb-8 md:mb-12">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             أدخل رقم هاتفك لعرض حجوزاتك
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-6 md:mb-8">
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-base">رقم الهاتف</Label>
+              <Label htmlFor="phone" className="text-sm md:text-base">رقم الهاتف</Label>
               <div className="flex gap-2">
                 <Input
                   id="phone"
@@ -218,16 +215,16 @@ const BookingTrack = () => {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="5xxxxxxxx"
-                  className="h-12 flex-1"
+                  className="h-10 md:h-12 flex-1 text-base"
                   dir="ltr"
                 />
                 <Button 
                   type="submit" 
                   size="lg" 
                   disabled={isLoading}
-                  className="h-12"
+                  className="h-10 md:h-12 px-4 md:px-6"
                 >
-                  {isLoading ? "جاري البحث..." : "بحث"}
+                  {isLoading ? "جاري..." : "بحث"}
                 </Button>
               </div>
             </div>
@@ -235,77 +232,77 @@ const BookingTrack = () => {
         </div>
 
         {searched && bookings.length > 0 && (
-          <div className="max-w-4xl mx-auto space-y-4">
+          <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
             {bookings.map((booking) => (
-              <Card key={booking.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-xl mb-2">
+              <Card key={booking.id} className="overflow-hidden">
+                <CardHeader className="pb-3 md:pb-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg md:text-xl mb-1 md:mb-2 truncate">
                         {getServiceName(booking.service)}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-xs md:text-sm truncate">
                         حجز رقم: {booking.id.substring(0, 8)}...
                       </CardDescription>
                     </div>
                     {getStatusBadge(booking.status)}
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">الاسم:</span>
-                      <span>{booking.customer_name}</span>
+                <CardContent className="space-y-3 md:space-y-4 pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div className="flex items-center gap-2 text-xs md:text-sm">
+                      <User className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium shrink-0">الاسم:</span>
+                      <span className="truncate">{booking.customer_name}</span>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">الهاتف:</span>
-                      <span dir="ltr">{booking.phone_number}</span>
+                    <div className="flex items-center gap-2 text-xs md:text-sm">
+                      <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium shrink-0">الهاتف:</span>
+                      <span dir="ltr" className="truncate">{booking.phone_number}</span>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">التاريخ:</span>
-                      <span>{format(new Date(booking.booking_date), "PPP", { locale: ar })}</span>
+                    <div className="flex items-center gap-2 text-xs md:text-sm">
+                      <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium shrink-0">التاريخ:</span>
+                      <span className="truncate">{format(new Date(booking.booking_date), "PPP", { locale: ar })}</span>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">الوقت:</span>
-                      <span>{booking.booking_time}</span>
+                    <div className="flex items-center gap-2 text-xs md:text-sm">
+                      <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium shrink-0">الوقت:</span>
+                      <span className="truncate">{booking.booking_time}</span>
                     </div>
                   </div>
 
                   {booking.notes && (
-                    <div className="flex items-start gap-2 text-sm pt-2 border-t">
-                      <FileText className="w-4 h-4 text-muted-foreground mt-0.5" />
-                      <div>
+                    <div className="flex items-start gap-2 text-xs md:text-sm pt-2 border-t">
+                      <FileText className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div className="min-w-0 flex-1">
                         <span className="font-medium">ملاحظات:</span>
-                        <p className="text-muted-foreground mt-1">{booking.notes}</p>
+                        <p className="text-muted-foreground mt-1 break-words">{booking.notes}</p>
                       </div>
                     </div>
                   )}
 
                   {booking.status === 'pending' && (
-                    <div className="pt-4 border-t">
+                    <div className="pt-3 md:pt-4 border-t">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" className="w-full gap-2">
-                            <X className="w-4 h-4" />
+                          <Button variant="destructive" size="sm" className="w-full gap-2 h-9 md:h-10">
+                            <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             إلغاء الحجز
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="max-w-[90vw] md:max-w-lg">
                           <AlertDialogHeader>
-                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                            <AlertDialogDescription>
+                            <AlertDialogTitle className="text-base md:text-lg">هل أنت متأكد؟</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm md:text-base">
                               هل تريد فعلاً إلغاء هذا الحجز؟ لا يمكن التراجع عن هذا الإجراء.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>تراجع</AlertDialogCancel>
+                          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                            <AlertDialogCancel className="mt-0">تراجع</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleCancelBooking(booking.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -319,8 +316,8 @@ const BookingTrack = () => {
                   )}
 
                   {booking.status === 'approved' && (
-                    <div className="pt-4 border-t space-y-4">
-                      <p className="text-sm text-green-600 dark:text-green-400 text-center font-medium">
+                    <div className="pt-3 md:pt-4 border-t space-y-3 md:space-y-4">
+                      <p className="text-xs md:text-sm text-green-600 dark:text-green-400 text-center font-medium">
                         ✓ تم تأكيد حجزك! نراك قريباً
                       </p>
                       {!reviewedBookings.has(booking.id) && (
@@ -335,8 +332,8 @@ const BookingTrack = () => {
                         />
                       )}
                       {reviewedBookings.has(booking.id) && (
-                        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                          <p className="text-sm text-green-600 text-center">
+                        <div className="p-3 md:p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                          <p className="text-xs md:text-sm text-green-600 text-center">
                             ✓ شكراً لك! تم إرسال تقييمك بنجاح
                           </p>
                         </div>
@@ -345,8 +342,8 @@ const BookingTrack = () => {
                   )}
 
                   {booking.status === 'canceled' && (
-                    <div className="pt-4 border-t">
-                      <p className="text-sm text-muted-foreground text-center">
+                    <div className="pt-3 md:pt-4 border-t">
+                      <p className="text-xs md:text-sm text-muted-foreground text-center">
                         تم إلغاء هذا الحجز
                       </p>
                     </div>

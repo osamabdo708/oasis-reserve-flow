@@ -119,11 +119,11 @@ const Shop = () => {
 
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {products.map(product => (
             <Card 
               key={product.id} 
-              className="group hover:shadow-lg transition-shadow cursor-pointer"
+              className="group hover:shadow-lg transition-all cursor-pointer overflow-hidden"
               onClick={() => navigate(`/product/${product.id}`)}
             >
               {product.image_url && (
@@ -135,18 +135,18 @@ const Shop = () => {
                   />
                 </div>
               )}
-              <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  <span>{product.name}</span>
-                  <Badge variant={product.stock > 0 ? "default" : "destructive"}>
-                    {product.stock > 0 ? `متوفر: ${product.stock}` : "نفذ"}
+              <CardHeader className="pb-3">
+                <CardTitle className="flex justify-between items-start gap-2 text-base md:text-lg">
+                  <span className="line-clamp-1">{product.name}</span>
+                  <Badge variant={product.stock > 0 ? "default" : "destructive"} className="shrink-0 text-xs">
+                    {product.stock > 0 ? `${product.stock}` : "نفذ"}
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">{product.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-accent">{product.price} ₪</span>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm md:text-base mb-3 md:mb-4 line-clamp-2">{product.description}</p>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-xl md:text-2xl font-bold text-accent whitespace-nowrap">{product.price} ₪</span>
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -154,9 +154,12 @@ const Shop = () => {
                     }}
                     disabled={product.stock === 0}
                     variant="default"
+                    size="sm"
+                    className="md:text-base"
                   >
-                    <Plus className="ml-2" size={18} />
-                    أضف للسلة
+                    <Plus className="ml-1 md:ml-2" size={16} />
+                    <span className="hidden md:inline">أضف للسلة</span>
+                    <span className="md:hidden">أضف</span>
                   </Button>
                 </div>
               </CardContent>
