@@ -107,7 +107,7 @@ const Index = () => {
     رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
   </p>
 
-  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+  <div className="hidden md:flex flex-col sm:flex-row gap-4 justify-center items-center">
     <Link to="/booking">
       <Button
         variant="outline"
@@ -157,20 +157,21 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-6xl mx-auto">
             {isLoading ? (
               <p className="col-span-full text-center text-muted-foreground">جاري التحميل...</p>
             ) : services.length === 0 ? (
               <p className="col-span-full text-center text-muted-foreground">لا توجد خدمات متاحة</p>
             ) : (
               services.map((service) => (
-                <ServiceCard
-                  key={service.id}
-                  title={service.name}
-                  description={service.description || ""}
-                  image={getServiceImage(service.image_url, service.name)}
-                  price="احجز الآن"
-                />
+                <div key={service.id} className="md:block">
+                  <ServiceCard
+                    title={service.name}
+                    description={service.description || ""}
+                    image={getServiceImage(service.image_url, service.name)}
+                    price="احجز الآن"
+                  />
+                </div>
               ))
             )}
           </div>
@@ -200,19 +201,20 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-6xl mx-auto">
             {products.length === 0 ? (
               <p className="col-span-full text-center text-muted-foreground">لا توجد منتجات متاحة</p>
             ) : (
               products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  image={product.image_url}
-                  price={product.price}
-                />
+                <div key={product.id} className="md:block">
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    description={product.description}
+                    image={product.image_url}
+                    price={product.price}
+                  />
+                </div>
               ))
             )}
           </div>

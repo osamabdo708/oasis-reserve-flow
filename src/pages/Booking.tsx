@@ -24,18 +24,15 @@ const Booking = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-6xl">
-        <div className="text-center mb-12">
-          {/* <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            احجز موعدك
-          </h1> */}
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+      <main className="container mx-auto px-4 py-6 md:py-12 max-w-6xl">
+        <div className="text-center mb-8 md:mb-12">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8">
             اختر الخدمة المناسبة لك ثم املأ النموذج
           </p>
         </div>
 
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-center mb-6">اختر الخدمة</h2>
+        <div className="mb-8 md:mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6">اختر الخدمة</h2>
           <ServiceSelector
             selectedService={selectedService}
             onServiceSelect={(serviceId, serviceName) => setSelectedService({ id: serviceId, name: serviceName })}
@@ -43,7 +40,7 @@ const Booking = () => {
         </div>
 
         {selectedService && (
-          <div className="mt-12">
+          <div className="mt-8 md:mt-12">
             <BookingForm 
               key={selectedService.id}
               preSelectedService={selectedService.id} 
