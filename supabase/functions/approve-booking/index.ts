@@ -73,7 +73,13 @@ serve(async (req) => {
     }
 
     // Create reminder record for this booking (1 hour before booking time)
-    const bookingDateTime = new Date(`${booking.booking_date}T${convertArabicTimeToISO(booking.booking_time)}`);
+    // Parse the booking date components to avoid timezone issues
+    const [year, month, day] = booking.booking_date.split('-').map(Number);
+    const timeISO = convertArabicTimeToISO(booking.booking_time);
+    const [hours, minutes] = timeISO.split(':').map(Number);
+    
+    // Create date using local timezone components
+    const bookingDateTime = new Date(year, month - 1, day, hours, minutes, 0);
     const reminderTime = new Date(bookingDateTime.getTime() - 60 * 60 * 1000); // 1 hour before
     
     const reminderMessage = `مرحباً ${booking.customer_name}،\n\nهذا تذكير بموعدك في سبا ريا:\n\n📅 التاريخ: ${formattedDate}\n🕐 الوقت: ${booking.booking_time}\n💆 الخدمة: ${serviceName}\n⏱ المدة: ${booking.booking_duration}\n\nنتطلع لرؤيتك قريباً! 🌸`;
