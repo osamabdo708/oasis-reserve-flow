@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import massageImg from "@/assets/massage.jpg";
 import hammamImg from "@/assets/hammam.jpg";
 import skincareImg from "@/assets/skincare.jpg";
+import doctorReiaImg from "@/assets/doctor-reia.jpg";
 import { LatestReviews } from "@/components/LatestReviews";
 
 interface Service {
@@ -260,6 +261,52 @@ const Index = () => {
               </div>
               <h3 className="font-bold text-lg mb-2">دعم متواصل</h3>
               <p className="text-muted-foreground">نحن هنا للإجابة على استفساراتك</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Dr. Reia Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-secondary/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                  الدكتورة ريا
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                  تتمتع الدكتورة ريا بخبرة تزيد عن 15 عاماً في مجال العناية بالبشرة والعلاج الطبيعي. حاصلة على شهادات متخصصة في الطب التجميلي والعلاج بالتدليك من أفضل المعاهد العالمية.
+                </p>
+                <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                  تؤمن الدكتورة ريا بأن الجمال الحقيقي يبدأ من الداخل، وتسعى دائماً لتقديم أفضل الخدمات العلاجية والتجميلية بأساليب طبيعية وآمنة، مع التركيز على راحة ورفاهية كل عميل.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <p className="text-muted-foreground">دكتوراه في الطب التجميلي</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <p className="text-muted-foreground">خبيرة معتمدة في العلاج بالتدليك</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <p className="text-muted-foreground">عضو في الجمعية الدولية للعناية بالبشرة</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="order-1 lg:order-2">
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-2xl"></div>
+                  <img
+                    src={doctorReiaImg}
+                    alt="الدكتورة ريا"
+                    className="relative w-full h-auto rounded-2xl shadow-2xl object-cover"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
