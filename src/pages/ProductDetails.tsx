@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ShoppingCart, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCart } from '@/hooks/useCart';
+import { ShoppingCart as ShoppingCartComponent } from '@/components/ShoppingCart';
 
 // Import product images
 import productMassageOil from '@/assets/product-massage-oil.jpg';
@@ -32,20 +34,13 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [cartCount, setCartCount] = useState(0);
-
-  // Update cart count from localStorage
-  const updateCartCount = () => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const totalItems = cart.reduce((sum: number, item: any) => sum + item.quantity, 0);
-    setCartCount(totalItems);
-  };
+  const [showCart, setShowCart] = useState(false);
+  const { cart, addToCart, updateQuantity: updateCartQuantity, removeFromCart, clearCart, getCartCount, getSubtotal } = useCart();
 
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
-    updateCartCount();
   }, [id]);
 
   const fetchProduct = async () => {
@@ -81,18 +76,13 @@ const ProductDetails = () => {
   const handleAddToCart = () => {
     if (!product) return;
     
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItem = cart.find((item: any) => item.id === product.id);
-    
-    if (existingItem) {
-      existingItem.quantity += quantity;
+    const result = addToCart(product, quantity);
+    if (result.success) {
+      toast.success(result.message);
+      setQuantity(1);
     } else {
-      cart.push({ ...product, quantity });
+      toast.error(result.message);
     }
-    
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartCount();
-    toast.success('تمت إضافة المنتج إلى السلة');
   };
 
   const decreaseQuantity = () => {
@@ -156,17 +146,14 @@ const ProductDetails = () => {
             </div>
             <Button
               variant="outline"
-              onClick={() => {
-                // Navigate to shop with cart open state
-                navigate('/shop', { state: { openCart: true } });
-              }}
+              onClick={() => setShowCart(true)}
               className="relative gap-2"
             >
               <ShoppingCart className="h-4 w-4" />
               السلة
-              {cartCount > 0 && (
+              {getCartCount() > 0 && (
                 <Badge variant="default" className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                  {cartCount}
+                  {getCartCount()}
                 </Badge>
               )}
             </Button>
@@ -266,6 +253,17 @@ const ProductDetails = () => {
             )}
           </div>
         </div>
+
+        {/* Shopping Cart Component */}
+        <ShoppingCartComponent
+          cart={cart}
+          showCart={showCart}
+          onClose={() => setShowCart(false)}
+          onUpdateQuantity={updateCartQuantity}
+          onRemoveItem={removeFromCart}
+          onClearCart={clearCart}
+          getSubtotal={getSubtotal}
+        />
       </main>
     </div>
   );
