@@ -77,10 +77,15 @@ serve(async (req) => {
     const [year, month, day] = booking.booking_date.split('-').map(Number);
     const timeISO = convertArabicTimeToISO(booking.booking_time);
     const [hours, minutes] = timeISO.split(':').map(Number);
-    
-    // Create date using local timezone components
-    const bookingDateTime = new Date(year, month - 1, day, hours, minutes, 0);
-    const reminderTime = new Date(bookingDateTime.getTime() - 60 * 60 * 1000); // 1 hour before
+
+    // Treat booking time as local spa time (UTC+2 by default) and convert to UTC
+    const TIMEZONE_OFFSET_HOURS = 2; // Adjust if your spa is in a different timezone
+    const bookingDateTimeUtc = new Date(
+      Date.UTC(year, month - 1, day, hours - TIMEZONE_OFFSET_HOURS, minutes, 0),
+    );
+
+    // Reminder is 1 hour BEFORE the booking time
+    const reminderTime = new Date(bookingDateTimeUtc.getTime() - 60 * 60 * 1000);
     
     const reminderMessage = `مرحباً ${booking.customer_name}،\n\nهذا تذكير بموعدك في سبا ريا:\n\n📅 التاريخ: ${formattedDate}\n🕐 الوقت: ${booking.booking_time}\n💆 الخدمة: ${serviceName}\n⏱ المدة: ${booking.booking_duration}\n\nنتطلع لرؤيتك قريباً! 🌸`;
 

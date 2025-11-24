@@ -61,46 +61,63 @@ serve(async (req) => {
       try {
         console.log(`Sending reminder ${reminder.id} to ${reminder.phone_number}`);
 
-        // Send WhatsApp message
+        // Format phone number for WhatsApp (+ prefix, digits only)
+        const rawPhoneNumber = (reminder.phone_number || '').toString().replace(/\D/g, '');
+        const whatsappPhoneNumber = `+${rawPhoneNumber}`;
+
+        // Send WhatsApp message using the same API format as other functions
         const whatsappResponse = await fetch('https://wp.palmart.ps/send', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${whatsappToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            phone: reminder.phone_number,
-            message: reminder.message
+            to: whatsappPhoneNumber,
+            text: reminder.message,
           }),
         });
 
         const whatsappData = await whatsappResponse.json();
 
-        if (whatsappResponse.ok) {
+        if (whatsappResponse.ok && whatsappData.success !== false) {
           // Update reminder status to sent
           await supabase
             .from('reminders')
             .update({
               status: 'sent',
-              sent_at: new Date().toISOString()
+              sent_at: new Date().toISOString(),
+              error_message: null,
             })
             .eq('id', reminder.id);
 
           console.log(`Reminder sent successfully: ${reminder.id}`);
           results.sent++;
         } else {
-          // Update reminder status to failed
-          await supabase
-            .from('reminders')
-            .update({
-              status: 'failed',
-              error_message: JSON.stringify(whatsappData)
-            })
-            .eq('id', reminder.id);
+          // If WhatsApp is still connecting, keep the reminder as pending so it can be retried
+          if (whatsappData?.status === 'connecting') {
+            console.warn(`WhatsApp still connecting for reminder ${reminder.id}:`, whatsappData);
 
-          console.error(`Failed to send reminder ${reminder.id}:`, whatsappData);
-          results.errors.push(`Reminder ${reminder.id}: WhatsApp API error`);
-          results.failed++;
+            await supabase
+              .from('reminders')
+              .update({
+                status: 'pending',
+                error_message: JSON.stringify(whatsappData),
+              })
+              .eq('id', reminder.id);
+          } else {
+            // For real errors, mark as failed
+            await supabase
+              .from('reminders')
+              .update({
+                status: 'failed',
+                error_message: JSON.stringify(whatsappData),
+              })
+              .eq('id', reminder.id);
+
+            console.error(`Failed to send reminder ${reminder.id}:`, whatsappData);
+            results.errors.push(`Reminder ${reminder.id}: WhatsApp API error`);
+            results.failed++;
+          }
         }
 
       } catch (error) {
@@ -112,7 +129,7 @@ serve(async (req) => {
           .from('reminders')
           .update({
             status: 'failed',
-            error_message: errorMessage
+            error_message: errorMessage,
           })
           .eq('id', reminder.id);
 
