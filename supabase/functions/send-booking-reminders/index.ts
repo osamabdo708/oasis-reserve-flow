@@ -17,11 +17,6 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const whatsappToken = Deno.env.get('WACHAT_TOKEN')!;
-
-    if (!whatsappToken) {
-      throw new Error('WACHAT_TOKEN is not configured');
-    }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -78,8 +73,23 @@ serve(async (req) => {
         });
 
         const whatsappData = await whatsappResponse.json();
+        
+        console.log(`WhatsApp reminder sent for ${reminder.id}:`, whatsappResponse.status, whatsappData);
 
-        if (whatsappResponse.ok && whatsappData.success !== false) {
+        if (!whatsappResponse.ok) {
+          console.error('WhatsApp API error:', whatsappData);
+          // Mark as failed but continue with other reminders
+          await supabase
+            .from('reminders')
+            .update({
+              status: 'failed',
+              error_message: JSON.stringify(whatsappData),
+            })
+            .eq('id', reminder.id);
+
+          results.errors.push(`Reminder ${reminder.id}: WhatsApp API error`);
+          results.failed++;
+        } else {
           // Update reminder status to sent
           await supabase
             .from('reminders')
@@ -92,32 +102,6 @@ serve(async (req) => {
 
           console.log(`Reminder sent successfully: ${reminder.id}`);
           results.sent++;
-        } else {
-          // If WhatsApp is still connecting, keep the reminder as pending so it can be retried
-          if (whatsappData?.status === 'connecting') {
-            console.warn(`WhatsApp still connecting for reminder ${reminder.id}:`, whatsappData);
-
-            await supabase
-              .from('reminders')
-              .update({
-                status: 'pending',
-                error_message: JSON.stringify(whatsappData),
-              })
-              .eq('id', reminder.id);
-          } else {
-            // For real errors, mark as failed
-            await supabase
-              .from('reminders')
-              .update({
-                status: 'failed',
-                error_message: JSON.stringify(whatsappData),
-              })
-              .eq('id', reminder.id);
-
-            console.error(`Failed to send reminder ${reminder.id}:`, whatsappData);
-            results.errors.push(`Reminder ${reminder.id}: WhatsApp API error`);
-            results.failed++;
-          }
         }
 
       } catch (error) {
