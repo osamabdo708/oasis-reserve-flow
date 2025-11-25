@@ -39,6 +39,8 @@ export const ClientsManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [newClient, setNewClient] = useState({
     name: "",
     age: "",
@@ -254,10 +256,15 @@ export const ClientsManagement = () => {
     return bookings.filter((booking) => !booking.client_id);
   };
 
+  const paginatedClients = clients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">إدارة العملاء</h2>
+        <div>
+          <h2 className="text-3xl font-bold">إدارة العملاء</h2>
+          <p className="text-sm text-muted-foreground mt-1">إجمالي العملاء: {clients.length}</p>
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -350,7 +357,7 @@ export const ClientsManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {clients.map((client) => (
+            {paginatedClients.map((client) => (
               <Card key={client.id}>
                 <CardHeader>
                   <div className="flex gap-4 items-start">
@@ -534,6 +541,30 @@ export const ClientsManagement = () => {
               </p>
             )}
           </div>
+
+          {clients.length > 0 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                السابق
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                صفحة {currentPage} من {Math.ceil(clients.length / itemsPerPage)}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(clients.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(clients.length / itemsPerPage)}
+              >
+                التالي
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

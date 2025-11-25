@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -26,6 +27,8 @@ interface Review {
 export const ReviewsManagement = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [stats, setStats] = useState({
     total: 0,
     average: 0,
@@ -116,36 +119,61 @@ export const ReviewsManagement = () => {
           {reviews.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">لا توجد تقييمات بعد</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-right">التاريخ</TableHead>
-                  <TableHead className="text-right">العميل</TableHead>
-                  <TableHead className="text-right">الخدمة</TableHead>
-                  <TableHead className="text-right">التقييم</TableHead>
-                  <TableHead className="text-right">الملاحظات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reviews.map((review) => (
-                  <TableRow key={review.id}>
-                    <TableCell>
-                      {new Date(review.created_at).toLocaleDateString("ar-SA")}
-                    </TableCell>
-                    <TableCell>{review.customer_name}</TableCell>
-                    <TableCell>{review.service_name}</TableCell>
-                    <TableCell>{renderStars(review.rating)}</TableCell>
-                    <TableCell>
-                      {review.feedback ? (
-                        <span className="text-sm">{review.feedback}</span>
-                      ) : (
-                        <Badge variant="outline">لا توجد ملاحظات</Badge>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="text-right font-semibold">التاريخ</TableHead>
+                      <TableHead className="text-right font-semibold">العميل</TableHead>
+                      <TableHead className="text-right font-semibold">الخدمة</TableHead>
+                      <TableHead className="text-right font-semibold">التقييم</TableHead>
+                      <TableHead className="text-right font-semibold">الملاحظات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((review) => (
+                      <TableRow key={review.id}>
+                        <TableCell>
+                          {new Date(review.created_at).toLocaleDateString("ar-SA")}
+                        </TableCell>
+                        <TableCell>{review.customer_name}</TableCell>
+                        <TableCell>{review.service_name}</TableCell>
+                        <TableCell>{renderStars(review.rating)}</TableCell>
+                        <TableCell>
+                          {review.feedback ? (
+                            <span className="text-sm">{review.feedback}</span>
+                          ) : (
+                            <Badge variant="outline">لا توجد ملاحظات</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  صفحة {currentPage} من {Math.ceil(reviews.length / itemsPerPage)}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(reviews.length / itemsPerPage), p + 1))}
+                  disabled={currentPage >= Math.ceil(reviews.length / itemsPerPage)}
+                >
+                  التالي
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

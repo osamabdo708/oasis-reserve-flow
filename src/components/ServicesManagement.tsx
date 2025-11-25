@@ -56,6 +56,8 @@ export const ServicesManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -599,20 +601,21 @@ export const ServicesManagement = () => {
             </Button>
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-right font-semibold">الصورة</TableHead>
-                  <TableHead className="text-right font-semibold">الاسم</TableHead>
-                  <TableHead className="text-right font-semibold">الوصف</TableHead>
-                  <TableHead className="text-right font-semibold">خيارات المدة والأسعار</TableHead>
-                  <TableHead className="text-center font-semibold">الحالة</TableHead>
-                  <TableHead className="text-center font-semibold">الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {services.map((service) => (
+          <>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="text-right font-semibold">الصورة</TableHead>
+                    <TableHead className="text-right font-semibold">الاسم</TableHead>
+                    <TableHead className="text-right font-semibold">الوصف</TableHead>
+                    <TableHead className="text-right font-semibold">خيارات المدة والأسعار</TableHead>
+                    <TableHead className="text-center font-semibold">الحالة</TableHead>
+                    <TableHead className="text-center font-semibold">الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {services.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((service) => (
                   <TableRow key={service.id} className="hover:bg-muted/30">
                     <TableCell>
                       <img
@@ -697,10 +700,32 @@ export const ServicesManagement = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                السابق
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                صفحة {currentPage} من {Math.ceil(services.length / itemsPerPage)}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(services.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(services.length / itemsPerPage)}
+              >
+                التالي
+              </Button>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
