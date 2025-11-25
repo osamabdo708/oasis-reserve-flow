@@ -31,6 +31,8 @@ export const OrdersManagement = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,12 +108,17 @@ export const OrdersManagement = () => {
     return <Badge variant={variants[status] || "secondary"}>{labels[status] || status}</Badge>;
   };
 
+  const paginatedOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">إدارة الطلبات</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">إدارة الطلبات</h2>
+        <span className="text-sm text-muted-foreground">إجمالي الطلبات: {orders.length}</span>
+      </div>
 
       <div className="grid gap-4">
-        {orders.map((order) => (
+        {paginatedOrders.map((order) => (
           <Card key={order.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -203,6 +210,30 @@ export const OrdersManagement = () => {
           </Card>
         )}
       </div>
+
+      {orders.length > 0 && (
+        <div className="flex justify-center items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            السابق
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            صفحة {currentPage} من {Math.ceil(orders.length / itemsPerPage)}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(Math.ceil(orders.length / itemsPerPage), p + 1))}
+            disabled={currentPage >= Math.ceil(orders.length / itemsPerPage)}
+          >
+            التالي
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

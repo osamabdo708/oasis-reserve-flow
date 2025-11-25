@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -33,6 +34,8 @@ interface Reminder {
 const RemindersManagement = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchReminders();
@@ -195,20 +198,21 @@ const RemindersManagement = () => {
                 لا توجد رسائل تذكير قيد الانتظار
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">العميل</TableHead>
-                      <TableHead className="text-right">رقم الهاتف</TableHead>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">موعد الحجز</TableHead>
-                      <TableHead className="text-right">سيتم الإرسال في</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingReminders.map((reminder) => (
+              <>
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-right font-semibold">العميل</TableHead>
+                        <TableHead className="text-right font-semibold">رقم الهاتف</TableHead>
+                        <TableHead className="text-right font-semibold">الخدمة</TableHead>
+                        <TableHead className="text-right font-semibold">موعد الحجز</TableHead>
+                        <TableHead className="text-right font-semibold">سيتم الإرسال في</TableHead>
+                        <TableHead className="text-right font-semibold">الحالة</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingReminders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((reminder) => (
                       <TableRow key={reminder.id}>
                         <TableCell className="font-medium">
                           {reminder.customer_name}
@@ -239,10 +243,32 @@ const RemindersManagement = () => {
                           {getStatusBadge(reminder.status)}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    السابق
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    صفحة {currentPage} من {Math.ceil(pendingReminders.length / itemsPerPage)}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(pendingReminders.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(pendingReminders.length / itemsPerPage)}
+                  >
+                    التالي
+                  </Button>
+                </div>
+              </>
             )}
           </TabsContent>
 
@@ -252,20 +278,21 @@ const RemindersManagement = () => {
                 لا توجد رسائل تذكير مرسلة بعد
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">العميل</TableHead>
-                      <TableHead className="text-right">رقم الهاتف</TableHead>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">موعد الحجز</TableHead>
-                      <TableHead className="text-right">تم الإرسال في</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sentReminders.map((reminder) => (
+              <>
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-right font-semibold">العميل</TableHead>
+                        <TableHead className="text-right font-semibold">رقم الهاتف</TableHead>
+                        <TableHead className="text-right font-semibold">الخدمة</TableHead>
+                        <TableHead className="text-right font-semibold">موعد الحجز</TableHead>
+                        <TableHead className="text-right font-semibold">تم الإرسال في</TableHead>
+                        <TableHead className="text-right font-semibold">الحالة</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sentReminders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((reminder) => (
                       <TableRow key={reminder.id}>
                         <TableCell className="font-medium">
                           {reminder.customer_name}
@@ -291,10 +318,32 @@ const RemindersManagement = () => {
                           {getStatusBadge(reminder.status)}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    السابق
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    صفحة {currentPage} من {Math.ceil(sentReminders.length / itemsPerPage)}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(sentReminders.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(sentReminders.length / itemsPerPage)}
+                  >
+                    التالي
+                  </Button>
+                </div>
+              </>
             )}
           </TabsContent>
 
@@ -304,21 +353,22 @@ const RemindersManagement = () => {
                 لا توجد رسائل فشلت
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">العميل</TableHead>
-                      <TableHead className="text-right">رقم الهاتف</TableHead>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">موعد الحجز</TableHead>
-                      <TableHead className="text-right">كان مقرراً</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
-                      <TableHead className="text-right">سبب الفشل</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {failedReminders.map((reminder) => (
+              <>
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-right font-semibold">العميل</TableHead>
+                        <TableHead className="text-right font-semibold">رقم الهاتف</TableHead>
+                        <TableHead className="text-right font-semibold">الخدمة</TableHead>
+                        <TableHead className="text-right font-semibold">موعد الحجز</TableHead>
+                        <TableHead className="text-right font-semibold">كان مقرراً</TableHead>
+                        <TableHead className="text-right font-semibold">الحالة</TableHead>
+                        <TableHead className="text-right font-semibold">سبب الفشل</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {failedReminders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((reminder) => (
                       <TableRow key={reminder.id}>
                         <TableCell className="font-medium">
                           {reminder.customer_name}
@@ -347,10 +397,32 @@ const RemindersManagement = () => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    السابق
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    صفحة {currentPage} من {Math.ceil(failedReminders.length / itemsPerPage)}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(failedReminders.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(failedReminders.length / itemsPerPage)}
+                  >
+                    التالي
+                  </Button>
+                </div>
+              </>
             )}
           </TabsContent>
         </Tabs>

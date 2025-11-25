@@ -56,6 +56,8 @@ const Admin = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     // Check if already authenticated
@@ -324,25 +326,26 @@ const Admin = () => {
                 ) : bookings.length === 0 ? (
                   <p className="text-center py-8 text-muted-foreground">لا توجد حجوزات</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-right">التاريخ</TableHead>
-                          <TableHead className="text-right">الخدمة</TableHead>
-                          <TableHead className="text-right">موعد الحجز</TableHead>
-                          <TableHead className="text-right">الوقت</TableHead>
-                          <TableHead className="text-right">المدة</TableHead>
-                          <TableHead className="text-right">السعر</TableHead>
-                          <TableHead className="text-right">اسم العميل</TableHead>
-                          <TableHead className="text-right">رقم الهاتف</TableHead>
-                          <TableHead className="text-right">ملاحظات</TableHead>
-                          <TableHead className="text-right">الحالة</TableHead>
-                          <TableHead className="text-right">إجراءات</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.map((booking) => (
+                  <>
+                    <div className="overflow-x-auto rounded-lg border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/50">
+                            <TableHead className="text-right font-semibold">التاريخ</TableHead>
+                            <TableHead className="text-right font-semibold">الخدمة</TableHead>
+                            <TableHead className="text-right font-semibold">موعد الحجز</TableHead>
+                            <TableHead className="text-right font-semibold">الوقت</TableHead>
+                            <TableHead className="text-right font-semibold">المدة</TableHead>
+                            <TableHead className="text-right font-semibold">السعر</TableHead>
+                            <TableHead className="text-right font-semibold">اسم العميل</TableHead>
+                            <TableHead className="text-right font-semibold">رقم الهاتف</TableHead>
+                            <TableHead className="text-right font-semibold">ملاحظات</TableHead>
+                            <TableHead className="text-right font-semibold">الحالة</TableHead>
+                            <TableHead className="text-right font-semibold">إجراءات</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {bookings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((booking) => (
                           <TableRow key={booking.id}>
                             <TableCell className="text-right">
                               {formatDate(booking.created_at)}
@@ -435,9 +438,31 @@ const Admin = () => {
                             </TableCell>
                           </TableRow>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <div className="flex justify-center items-center gap-2 mt-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        السابق
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        صفحة {currentPage} من {Math.ceil(bookings.length / itemsPerPage)}
+                      </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(bookings.length / itemsPerPage), p + 1))}
+                        disabled={currentPage >= Math.ceil(bookings.length / itemsPerPage)}
+                      >
+                        التالي
+                      </Button>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>

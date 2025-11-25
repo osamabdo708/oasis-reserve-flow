@@ -24,6 +24,8 @@ export const ShippingMethodsManagement = () => {
   const [newMethodDuration, setNewMethodDuration] = useState("");
   const [newMethodPrice, setNewMethodPrice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchShippingMethods();
@@ -150,6 +152,8 @@ export const ShippingMethodsManagement = () => {
     }
   };
 
+  const paginatedMethods = shippingMethods.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       <Card className="border-primary/20">
@@ -231,19 +235,20 @@ export const ShippingMethodsManagement = () => {
               <p className="text-sm text-muted-foreground mt-2">ابدأ بإضافة طريقة شحن جديدة من الأعلى</p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right font-semibold">اسم الطريقة</TableHead>
-                    <TableHead className="text-right font-semibold">المدة الزمنية</TableHead>
-                    <TableHead className="text-right font-semibold">السعر</TableHead>
-                    <TableHead className="text-right font-semibold">الحالة</TableHead>
-                    <TableHead className="text-right font-semibold">الإجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {shippingMethods.map((method) => (
+            <>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="text-right font-semibold">اسم الطريقة</TableHead>
+                      <TableHead className="text-right font-semibold">المدة الزمنية</TableHead>
+                      <TableHead className="text-right font-semibold">السعر</TableHead>
+                      <TableHead className="text-right font-semibold">الحالة</TableHead>
+                      <TableHead className="text-right font-semibold">الإجراءات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedMethods.map((method) => (
                     <TableRow key={method.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium">{method.name}</TableCell>
                       <TableCell>
@@ -277,10 +282,32 @@ export const ShippingMethodsManagement = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  صفحة {currentPage} من {Math.ceil(shippingMethods.length / itemsPerPage)}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(shippingMethods.length / itemsPerPage), p + 1))}
+                  disabled={currentPage >= Math.ceil(shippingMethods.length / itemsPerPage)}
+                >
+                  التالي
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

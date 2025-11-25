@@ -24,6 +24,8 @@ export const ProductsManagement = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -197,11 +199,16 @@ export const ProductsManagement = () => {
     }
   };
 
+  const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">إدارة المنتجات</h2>
-        <Button onClick={() => setIsAdding(!isAdding)} variant="spa">
+        <div>
+          <h2 className="text-2xl font-bold">إدارة المنتجات</h2>
+          <p className="text-sm text-muted-foreground mt-1">إجمالي المنتجات: {products.length}</p>
+        </div>
+        <Button onClick={() => setIsAdding(!isAdding)} variant="default">
           <Plus className="ml-2" />
           إضافة منتج جديد
         </Button>
@@ -307,7 +314,7 @@ export const ProductsManagement = () => {
       )}
 
       <div className="grid gap-4">
-        {products.map((product) => (
+        {paginatedProducts.map((product) => (
           <Card key={product.id}>
             <CardContent className="p-4">
               <div className="flex gap-4">
@@ -366,6 +373,30 @@ export const ProductsManagement = () => {
           </Card>
         ))}
       </div>
+
+      {products.length > 0 && (
+        <div className="flex justify-center items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            السابق
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            صفحة {currentPage} من {Math.ceil(products.length / itemsPerPage)}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(Math.ceil(products.length / itemsPerPage), p + 1))}
+            disabled={currentPage >= Math.ceil(products.length / itemsPerPage)}
+          >
+            التالي
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
