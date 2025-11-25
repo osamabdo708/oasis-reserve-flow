@@ -33,9 +33,15 @@ interface Booking {
   client_id: string | null;
 }
 
+interface Service {
+  id: string;
+  name: string;
+}
+
 export const ClientsManagement = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -52,9 +58,31 @@ export const ClientsManagement = () => {
   const [openBookingSections, setOpenBookingSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    fetchServices();
     fetchClients();
     fetchBookings();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, name');
+      
+      if (error) throw error;
+      
+      if (data) {
+        setServices(data);
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
+
+  const getServiceName = (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId);
+    return service ? service.name : serviceId;
+  };
 
   const fetchClients = async () => {
     try {
@@ -447,7 +475,7 @@ export const ClientsManagement = () => {
                               className="flex justify-between items-center p-3 bg-muted rounded-lg"
                             >
                               <div>
-                                <p className="font-medium">{booking.service}</p>
+                                <p className="font-medium">{getServiceName(booking.service)}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {booking.customer_name} - {booking.booking_date} في{" "}
                                   {booking.booking_time}
@@ -505,7 +533,7 @@ export const ClientsManagement = () => {
                                 className="flex justify-between items-center p-3 bg-muted rounded-lg"
                               >
                                 <div>
-                                  <p className="font-medium">{booking.service}</p>
+                                  <p className="font-medium">{getServiceName(booking.service)}</p>
                                   <p className="text-sm text-muted-foreground">
                                     {booking.customer_name} - {booking.booking_date} في{" "}
                                     {booking.booking_time}
