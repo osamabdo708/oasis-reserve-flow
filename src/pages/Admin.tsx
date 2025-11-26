@@ -259,56 +259,60 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30" dir="rtl">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">لوحة التحكم - الحجوزات</h1>
-          <Button variant="outline" onClick={handleLogout} className="gap-2">
-            <LogOut className="w-4 h-4" />
-            تسجيل الخروج
-          </Button>
-        </div>
-      </header>
+      <Tabs defaultValue="dashboard" className="w-full" dir="rtl">
+        <header className="border-b bg-background">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold">لوحة التحكم - الحجوزات</h1>
+            <Button variant="outline" onClick={handleLogout} className="gap-2">
+              <LogOut className="w-4 h-4" />
+              تسجيل الخروج
+            </Button>
+          </div>
+          <div className="bg-muted/30 border-t">
+            <div className="container mx-auto px-4">
+              <TabsList className="h-auto w-full bg-transparent p-0 flex justify-start gap-1">
+                <TabsTrigger value="dashboard" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <LayoutDashboard className="w-4 h-4" />
+                  لوحة المعلومات
+                </TabsTrigger>
+                <TabsTrigger value="bookings" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <CalendarCheck className="w-4 h-4" />
+                  الحجوزات
+                </TabsTrigger>
+                <TabsTrigger value="services" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Sparkles className="w-4 h-4" />
+                  الخدمات
+                </TabsTrigger>
+                <TabsTrigger value="products" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Package className="w-4 h-4" />
+                  المنتجات
+                </TabsTrigger>
+                <TabsTrigger value="orders" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Package className="w-4 h-4" />
+                  الطلبات
+                </TabsTrigger>
+                <TabsTrigger value="shipping" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Package className="w-4 h-4" />
+                  الشحن
+                </TabsTrigger>
+                <TabsTrigger value="clients" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Users className="w-4 h-4" />
+                  العملاء
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <MessageCircle className="w-4 h-4" />
+                  التقييمات
+                </TabsTrigger>
+                <TabsTrigger value="reminders" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                  <Bell className="w-4 h-4" />
+                  التذكيرات
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="dashboard" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-9 mb-8">
-            <TabsTrigger value="dashboard" className="gap-2">
-              <LayoutDashboard className="w-4 h-4" />
-              لوحة المعلومات
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="gap-2">
-              <CalendarCheck className="w-4 h-4" />
-              الحجوزات
-            </TabsTrigger>
-            <TabsTrigger value="services" className="gap-2">
-              <Sparkles className="w-4 h-4" />
-              الخدمات
-            </TabsTrigger>
-            <TabsTrigger value="products" className="gap-2">
-              <Package className="w-4 h-4" />
-              المنتجات
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <Package className="w-4 h-4" />
-              الطلبات
-            </TabsTrigger>
-            <TabsTrigger value="shipping" className="gap-2">
-              <Package className="w-4 h-4" />
-              الشحن
-            </TabsTrigger>
-            <TabsTrigger value="clients" className="gap-2">
-              <Users className="w-4 h-4" />
-              العملاء
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="gap-2">
-              <MessageCircle className="w-4 h-4" />
-              التقييمات
-            </TabsTrigger>
-            <TabsTrigger value="reminders" className="gap-2">
-              <Bell className="w-4 h-4" />
-              التذكيرات
-            </TabsTrigger>
-          </TabsList>
+        <main className="container mx-auto px-4 py-8">
 
           <TabsContent value="dashboard">
             <Dashboard />
@@ -504,8 +508,8 @@ const Admin = () => {
           <TabsContent value="reminders">
             <RemindersManagement />
           </TabsContent>
-        </Tabs>
-      </main>
+        </main>
+      </Tabs>
     </div>
   );
 };
