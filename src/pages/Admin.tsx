@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users, Trash2, Bell } from "lucide-react";
+import { LogOut, CheckCircle, MessageCircle, CalendarCheck, Sparkles, Package, Users, Trash2, Bell, LayoutDashboard } from "lucide-react";
 import { ServicesManagement } from "@/components/ServicesManagement";
 import { ProductsManagement } from "@/components/ProductsManagement";
 import { OrdersManagement } from "@/components/OrdersManagement";
@@ -16,6 +16,7 @@ import { ReviewsManagement } from "@/components/ReviewsManagement";
 import { ClientsManagement } from "@/components/ClientsManagement";
 import { ShippingMethodsManagement } from "@/components/ShippingMethodsManagement";
 import RemindersManagement from "@/components/RemindersManagement";
+import { Dashboard } from "@/components/Dashboard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -269,8 +270,12 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="bookings" className="w-full" dir="rtl">
-          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-8 mb-8">
+        <Tabs defaultValue="dashboard" className="w-full" dir="rtl">
+          <TabsList className="grid w-full max-w-6xl mx-auto grid-cols-9 mb-8">
+            <TabsTrigger value="dashboard" className="gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              لوحة المعلومات
+            </TabsTrigger>
             <TabsTrigger value="bookings" className="gap-2">
               <CalendarCheck className="w-4 h-4" />
               الحجوزات
@@ -304,6 +309,10 @@ const Admin = () => {
               التذكيرات
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <Dashboard />
+          </TabsContent>
 
           <TabsContent value="bookings">
             <Card>
