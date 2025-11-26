@@ -270,7 +270,7 @@ const Admin = () => {
           </div>
           <div className="bg-muted/30 border-t">
             <div className="container mx-auto px-4">
-              <TabsList className="h-auto w-full bg-transparent p-0 flex justify-start gap-1">
+              <TabsList className="h-[60px] w-full bg-transparent p-0 flex justify-center gap-1">
                 <TabsTrigger value="dashboard" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                   <LayoutDashboard className="w-4 h-4" />
                   لوحة المعلومات
