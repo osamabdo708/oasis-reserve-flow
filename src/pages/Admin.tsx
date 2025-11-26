@@ -262,7 +262,7 @@ const Admin = () => {
       <Tabs defaultValue="dashboard" className="w-full" dir="rtl">
         <header className="border-b bg-background">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">لوحة التحكم - الحجوزات</h1>
+            <h1 className="text-2xl font-bold">لوحة التحكم</h1>
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="w-4 h-4" />
               تسجيل الخروج
