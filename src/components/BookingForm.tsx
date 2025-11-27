@@ -574,7 +574,7 @@ const { error } = await supabase
           <span className="font-bold text-primary text-lg">{selectedDurationPrice} ₪</span>
         </div>
         <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
-          💳 <strong>الدفع:</strong> الدفع عند الوصول للمنتجع
+          💳 <strong>الدفع:</strong> الدفع عند الوصول للعيادة
         </p>
       </div>
 
