@@ -381,25 +381,29 @@ const Index = () => {
               </p>
               <div className="flex items-center justify-center lg:justify-start gap-2 text-muted-foreground mb-4">
                 <MapPin className="w-5 h-5" />
-                <span>رام الله - بناية رقم 3</span>
+                <span> رام الله - عمارة شطارة - مقابل عمارة الانجلو - الطابق الرابع</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 جميع الحقوق محفوظة © 2025
               </p>
             </div>
             
-            <div className="rounded-lg overflow-hidden shadow-lg h-64">
-              <iframe
-                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAHqQMQh7eDCe7VCZJwHUbg--tpDQSFrwc&q=رام+الله"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="موقع ريا كلينيك"
-              />
-            </div>
+           <div className="rounded-lg overflow-hidden shadow-lg h-64">
+  <iframe
+    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAHqQMQh7eDCe7VCZJwHUbg--tpDQSFrwc
+      &q=Angelos+Restaurant,Ramallah,West+Bank
+      &center=31.9043388,35.2003899
+      &zoom=17"
+    width="100%"
+    height="100%"
+    style={{ border: 0 }}
+    allowFullScreen
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade"
+    title="موقع Angelos Restaurant"
+/>
+</div>
+
           </div>
         </div>
       </footer>
