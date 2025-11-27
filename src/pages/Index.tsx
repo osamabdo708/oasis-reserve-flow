@@ -107,7 +107,7 @@ const Index = () => {
   />
 
   <p className="text-xl md:text-2xl mb-8 text-white/95 leading-relaxed drop-shadow">
-    رحلة من الاسترخاء والجمال في أجواء هادئة ومريحة
+    استرخِ، تعافَ، واستعد نشاطك وحيويتك
   </p>
 
   <div className="hidden md:flex flex-col sm:flex-row gap-4 justify-center items-center">
