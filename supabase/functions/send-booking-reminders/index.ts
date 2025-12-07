@@ -1,61 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-// 🔁 WhatsApp retry helper
-async function sendWhatsAppMessage(to: string, text: string) {
-  const maxRetries = 5;
-  const delayMs = 3000; // 3 seconds
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch("https://wp.palmart.ps/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, text }),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (_) {
-        data = {};
-      }
-
-      // Success
-      if (response.ok) {
-        return { success: true, data };
-      }
-
-      // WhatsApp not ready → retry again
-      if (
-        data?.error === "WhatsApp not connected yet." ||
-        data?.status === "connecting"
-      ) {
-        console.warn(
-          `WhatsApp not ready (attempt ${attempt}/${maxRetries}). Retrying in 3 seconds...`,
-        );
-        await new Promise((res) => setTimeout(res, delayMs));
-        continue;
-      }
-
-      // Other errors → do not retry
-      return { success: false, data };
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  }
-
-  return {
-    success: false,
-    data: { error: "WhatsApp did not connect in time after retries." },
-  };
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -117,26 +67,60 @@ serve(async (req) => {
           .replace(/\D/g, "");
         const whatsappPhoneNumber = `+${rawPhoneNumber}`;
 
-        // 🔁 Use retry WhatsApp sender
-        const sendResult = await sendWhatsAppMessage(
-          whatsappPhoneNumber,
-          reminder.message,
-        );
+        console.log('Sending WhatsApp reminder to:', whatsappPhoneNumber);
 
-        if (!sendResult.success) {
-          console.error("WhatsApp failed:", sendResult.data);
+        // Send WhatsApp message - same pattern as approve-booking and send-verification
+        const whatsappResponse = await fetch("https://wp.palmart.ps/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: whatsappPhoneNumber,
+            text: reminder.message,
+          }),
+        });
+
+        const whatsappData = await whatsappResponse.json();
+        
+        console.log('WhatsApp API response:', whatsappResponse.status, whatsappData);
+
+        if (!whatsappResponse.ok) {
+          console.error("WhatsApp API error:", whatsappData);
+          
+          // If WhatsApp is still connecting, keep the reminder as pending to retry later
+          if (whatsappData.status === 'connecting') {
+            console.log('WhatsApp is connecting, will retry later');
+            results.errors.push(`Reminder ${reminder.id}: WhatsApp connecting, will retry`);
+            continue; // Don't mark as failed, keep as pending
+          }
 
           await supabase
             .from("reminders")
             .update({
               status: "failed",
-              error_message: JSON.stringify(sendResult.data),
+              error_message: JSON.stringify(whatsappData),
             })
             .eq("id", reminder.id);
 
           results.errors.push(
             `Reminder ${reminder.id}: WhatsApp API error`,
           );
+          results.failed++;
+          continue;
+        }
+
+        // Check if response indicates success
+        if (whatsappData.success === false) {
+          console.error('WhatsApp API returned unsuccessful:', whatsappData);
+          
+          await supabase
+            .from("reminders")
+            .update({
+              status: "failed",
+              error_message: JSON.stringify(whatsappData),
+            })
+            .eq("id", reminder.id);
+
+          results.errors.push(`Reminder ${reminder.id}: WhatsApp unsuccessful`);
           results.failed++;
           continue;
         }
@@ -151,7 +135,7 @@ serve(async (req) => {
           })
           .eq("id", reminder.id);
 
-        console.log(`Reminder sent successfully: ${reminder.id}`);
+        console.log(`Reminder sent successfully: ${reminder.id}, messageId:`, whatsappData.messageId);
         results.sent++;
       } catch (error) {
         console.error(`Error processing reminder ${reminder.id}:`, error);
