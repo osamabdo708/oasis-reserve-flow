@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, DollarSign, Users, Star, TrendingUp, ShoppingCart } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { DashboardBookingsTimeline } from "./DashboardBookingsTimeline";
 
 interface DashboardStats {
   totalBookings: number;
@@ -293,6 +294,9 @@ export const Dashboard = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Booking Timeline */}
+        <DashboardBookingsTimeline />
       </div>
     </div>
   );
