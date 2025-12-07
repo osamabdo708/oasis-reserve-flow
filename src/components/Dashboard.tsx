@@ -140,9 +140,6 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* Weekly Schedule - Full Width at Top */}
-      <DashboardBookingsTimeline />
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
@@ -213,6 +210,9 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Weekly Schedule - Full Width */}
+      <DashboardBookingsTimeline />
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
